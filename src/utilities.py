@@ -15,282 +15,7 @@ import seaborn as sns
 import json
 import pickle
 
-
-def get_date_time():
-    """
-    uses datetime to return a string with the format CurrentDate_CurrentTime,  e.g. 20220920_120000
-    useful for naming directories
-
-    Parameters
-    ----------
-    None
-
-    Return
-    ------
-    The date and time as a string, e.g. 20220920_120000
-
-    """
-    
-    from datetime import date, datetime
-    
-    #get the date
-    current_date = str(date.today())
-    current_date = ('').join(current_date.split('-'))
-    
-    #get the time
-    current_time = str(datetime.now())
-    current_time = current_time.split(' ')[-1]
-    current_time = ('').join(current_time.split('.')[0].split(':'))
-    
-    return ('_').join([current_date,current_time])
-def combine_dataframes(source_dir, save_dir, save_name, file_format, include_string, exclude_string, paths_list=None):
-
-	"""
-	combine multiple csvs from a single directory (default) or list of paths into one. This should replace combine_annotation and combine_prediction.
-
-	Parameters
-	----------
-	paths_list (list): a list of full paths to the csvs to be combined
-	
-	source_dir (string): the path to the directory containing the annotation csvs to be combined
-
-	save_dir (string): the path to the directory where the combined csv will be saved
-	
-	save_name (string): name of the combined csv to be saved
-	
-	file_format (string): '.csv' or '.feather'
-	
-	include_sting (string): only combine files with this string in their name
-	
-	exclude_string (string): ignore files with this in their name
-
-	Returns
-	-------
-	all_files (dataframe): the combined dataframe
-
-	"""
-	assert file_format in ['.csv', '.wav']
-    
-	if paths_list == None and source_dir != None:
-		sources = [os.path.join(source_dir,i) for i in os.listdir(source_dir) if i.endswith(file_format) and exclude_string not in i and not i.startswith('.') and include_string in i]
-		combined = []
-		
-	elif paths_list != None and source_dir == None:
-		sources=paths_list
-		combined=[]
-        
-    
-		
-	elif paths_list == None and source_dir == None:
-		print('provide either a list of paths or a directory containing all the files to be combined')
-		
-	elif paths_list != None and source_dir != None:
-		print('provide either a list of paths or a directory containing all the files to be combined, not both')
-	
-	if file_format == '.csv':
-
-		for i in sources:
-			temp = pd.read_csv(i)
-			if len(i) != 0:
-				combined.append(temp)
-			else:
-				print(i, 'has no vocalizations')
-
-		all_files = pd.concat(combined)
-		all_files.to_csv(os.path.join(save_dir,save_name)+'.csv', index=False)
-		print('saved the combined dataframe to',save_dir+save_name+file_format)
-		return all_files
-	
-	elif file_format == '.feather':
-
-		for i in sources:
-			temp = pd.read_feather(i)
-			if len(i) != 0:
-				combined.append(temp)
-			else:
-				print(i, 'has no vocalizations')
-
-		all_files = pd.concat(combined)
-		all_files = all_files.reset_index(drop=True)
-		all_files.to_feather(os.path.join(save_dir,save_name)+'.feather')
-		print('saved the combined dataframe to', save_dir+save_name+file_format)
-		return all_files
-			
-
-
-def save_parameters(params, save_dir, save_name):
-    """
-    NOTE this is a copy of the function in segmentation.py
-    TODO make your .py files into packages so you can import them instead of copying things like this
-    
-    save a dictionary as .json and double check if you want to overwrite it.
-
-    Parameters
-    ----------
-    params_dict (dict): the parametes dictionary to be saved
-
-    save_dir (str): the path to the place where the dictionary file will be saved
-
-    save_name (str): the name of the file without any file extension
-
-    Returns
-    -------
-    None
-
-    """
-
-    save_path = os.path.join(save_dir,save_name)
-
-    if save_name not in [i.split('.')[0] for i in os.listdir(save_dir)]:
-        print('making a new params file...')
-        with open(save_path+'.json', 'w') as fp:
-            json.dump(params, fp, indent=4)
-        print('saved the params file to:\n',save_path)
-        return
-
-    else: 
-        print('This file already exists in save_dir:', save_name)
-        val = input('overwrite? y/n')
-
-        if val == 'y':
-            val = input('are you sure? y/n')
-
-            if val == 'y':
-                with open(save_path+'.json', 'w') as fp:
-                    json.dump(params, fp, indent=4)
-                print('ok - replaced existing file')
-                return
-
-            elif val == 'n':
-                print('ok - no file saved')
-                return
-
-        elif val == 'n':
-                print('ok - no file saved')
-                return
-
-        else:
-                print('no file saved...')
-                return
-
-    return
-	
-	
-def load_parameters(save_dir, save_name):
-	"""
-	load a dictionary from .json 
-
-	Parameters
-	----------
-	
-	save_dir (str): the path to the place where dictionary was saved
-
-	save_name (str): the name of the .json file (including file extension)
-	
-	Returns
-	-------
-	params_dict (dict): the params dictionary you saved
-
-	"""
-	
-	save_path = os.path.join(save_dir,save_name)
-	
-	with open(save_path+'.json', 'r') as fp:
-			params_dict = json.load(fp)
-	print('loaded parameters from:\n\t', save_path)
-	return params_dict
-	
-# def aggregate_das_predictions(save_dir, predictions_dir, model_dict, iteration_dict):
-# """
-# 	Collect predictions csvs from different species and das models into a single csv for evaluation using combine dataframes
-# 
-# 	Parameters
-# 	----------
-# 	save_dir (str): full path to the directory where the combined csv will be saved
-# 	
-# 	predictions_dir (str): the path to the directory containing all the predictions directories for each species, their different models and iterations of prediction from those models
-# 
-# 	model_dict (dict): dictionary where the keys are species and the values are the models
-# 	
-# 	iteration_dict (dict): dictionary where the keys are species and the values are the iteration of each model you want to combine
-# 
-# 	Returns
-# 	-------
-# 	a dataframe of predictions for all species with a column for model and iteration
-# 	also saves this dataframe as a csv to save_dir
-# 
-# 	"""
-# 
-# 	
-# 
-# 
-# 
-# 	
-
-### functions related to checking and getting info from file names ###
-###################################################################################################################################################
-def trim_channel(directory):
-	"""
-	remove the channel prefix from raw wav file names that gets added by avisoft
-
-	some recordings have the channel number pre-pended to the start of the file name. This function checks that this matches
-	the file name information in the interior of the file name, then removes the pre-pended channel
-	If there are mismatches the code stops and returns a list of mismatches
-	In this case the interior channel number should be modified to match the pre-pended channel, which is added automatically by avisoft
-
-	Parameters
-	----------
-	directory (string): path to the directory containing all of the raw wav files
-
-	Returns
-	-------
-	None
-
-	"""
-
-	files = os.listdir(directory)
-	to_modify = [i for i in files if i.startswith('ch')]
-	mismatch = []
-
-	#first check that all the files contain channel information in the expected locations
-	for file in to_modify:
-
-		if file.split('_')[0] != [i for i in file.split('_')[1:] if 'ch' in i][0]:
-			mismatch.append(file)
-
-	problem = False
-	#if channels don't match within any filename, break and return those names
-	if len(mismatch) != 0:
-		problem = True
-		print('The returned files have a mismatch in their channel numbers.')
-		return mismatch
-
-	#otherwise trim and rename (note channel numbers are 1-8, so all files with prepended channels look lke 'ch#_' at the start, 4 characters to trim)
-	elif not problem:
-		for file in to_modify:
-			new_name = file[4:]
-			os.rename(directory+file, directory+new_name)
-	
-	
-def prepend(root, file, prepend):
-	"""
-	add a string to the start of a file name - can be useful for renaming so categories in filename match
-
-	Parameters
-	----------
-	root (string): path to the directory containing all of the raw wav files whose names you want to change
-	file (string): the name of the file
-	prepend (string): the string to prepend
-
-	Returns
-	-------
-	None
-	"""
-
-	if file.startswith('box'):
-		os.rename(root+file, root+prepend+file)
-
-
+#definitely keep - documented now on evernote 20230105
 def check_file_names(directory):
 	"""
 	check that file names follow the naming convention used by other functions
@@ -301,8 +26,10 @@ def check_file_names(directory):
 
 	Returns
 	-------
-	bad_lengths (list): a list of file names that don't have the right number of items (each separated by an underscore)
-	wrong_order (list): a list of file names that have the correct number of it but one of them is not what it should be, the location that has incorrect information
+	bad_lengths (list): a list of file names that don't have the right number of items 
+	wrong_order (list): a list of lists containing file names that have the correct number 
+    of items but at least one of them is not what it should be at index 0 
+    and the location that has incorrect information at index 1.
 
 
 	"""
@@ -419,10 +146,201 @@ def get_meta_data(directory):
 	meta_df = pd.DataFrame.from_records(all_rows, columns =['species', 'parents', 'litter', 'pup', 'channel', 'weight_mg', 'sex', 'pre_T', 'post_T', 'removal_flag', 'age', 'date', 'time'])
 	return meta_df
 
-	### functions for handling wav file clips ###
-	########################################################################################################################################################################
 
-	#take a csv of features generated by the old pipeline and extract start, stop, and labels - can be useful for re-segmenting by species
+
+def get_date_time():
+    """
+    uses datetime to return a string with the format CurrentDate_CurrentTime,  e.g. 20220920_120000
+    useful for naming directories
+
+    Parameters
+    ----------
+    None
+
+    Return
+    ------
+    The date and time as a string, e.g. 20220920_120000
+
+    """
+    
+    from datetime import date, datetime
+    
+    #get the date
+    current_date = str(date.today())
+    current_date = ('').join(current_date.split('-'))
+    
+    #get the time
+    current_time = str(datetime.now())
+    current_time = current_time.split(' ')[-1]
+    current_time = ('').join(current_time.split('.')[0].split(':'))
+    
+    return ('_').join([current_date,current_time])
+
+def save_parameters(params, save_dir, save_name):
+    """
+    NOTE this is a copy of the function in segmentation.py
+    TODO make your .py files into packages so you can import them instead of copying things like this
+    
+    save a dictionary as .json and double check if you want to overwrite it.
+
+    Parameters
+    ----------
+    params_dict (dict): the parametes dictionary to be saved
+
+    save_dir (str): the path to the place where the dictionary file will be saved
+
+    save_name (str): the name of the file without any file extension
+
+    Returns
+    -------
+    None
+
+    """
+
+    save_path = os.path.join(save_dir,save_name)
+
+    if save_name not in [i.split('.')[0] for i in os.listdir(save_dir)]:
+        print('making a new params file...')
+        with open(save_path+'.json', 'w') as fp:
+            json.dump(params, fp, indent=4)
+        print('saved the params file to:\n',save_path)
+        return
+
+    else: 
+        print('This file already exists in save_dir:', save_name)
+        val = input('overwrite? y/n')
+
+        if val == 'y':
+            val = input('are you sure? y/n')
+
+            if val == 'y':
+                with open(save_path+'.json', 'w') as fp:
+                    json.dump(params, fp, indent=4)
+                print('ok - replaced existing file')
+                return
+
+            elif val == 'n':
+                print('ok - no file saved')
+                return
+
+        elif val == 'n':
+                print('ok - no file saved')
+                return
+
+        else:
+                print('no file saved...')
+                return
+
+    return
+	
+	
+
+
+    
+    
+    
+def load_parameters(save_dir, save_name):
+	"""
+	load a dictionary from .json 
+
+	Parameters
+	----------
+	
+	save_dir (str): the path to the place where dictionary was saved
+
+	save_name (str): the name of the .json file (including file extension)
+	
+	Returns
+	-------
+	params_dict (dict): the params dictionary you saved
+
+	"""
+	
+	save_path = os.path.join(save_dir,save_name)
+	
+	with open(save_path+'.json', 'r') as fp:
+			params_dict = json.load(fp)
+	print('loaded parameters from:\n\t', save_path)
+	return params_dict
+
+
+
+
+
+
+	
+
+
+#probably delete
+def trim_channel(directory):
+	"""
+	remove the channel prefix from raw wav file names that gets added by avisoft
+
+	some recordings have the channel number pre-pended to the start of the file name. This function checks that this matches
+	the file name information in the interior of the file name, then removes the pre-pended channel
+	If there are mismatches the code stops and returns a list of mismatches
+	In this case the interior channel number should be modified to match the pre-pended channel, which is added automatically by avisoft
+
+	Parameters
+	----------
+	directory (string): path to the directory containing all of the raw wav files
+
+	Returns
+	-------
+	None
+
+	"""
+
+	files = os.listdir(directory)
+	to_modify = [i for i in files if i.startswith('ch')]
+	mismatch = []
+
+	#first check that all the files contain channel information in the expected locations
+	for file in to_modify:
+
+		if file.split('_')[0] != [i for i in file.split('_')[1:] if 'ch' in i][0]:
+			mismatch.append(file)
+
+	problem = False
+	#if channels don't match within any filename, break and return those names
+	if len(mismatch) != 0:
+		problem = True
+		print('The returned files have a mismatch in their channel numbers.')
+		return mismatch
+
+	#otherwise trim and rename (note channel numbers are 1-8, so all files with prepended channels look lke 'ch#_' at the start, 4 characters to trim)
+	elif not problem:
+		for file in to_modify:
+			new_name = file[4:]
+			os.rename(directory+file, directory+new_name)
+	
+	
+def prepend(root, file, prepend):
+	"""
+	add a string to the start of a file name - can be useful for renaming so categories in filename match
+
+	Parameters
+	----------
+	root (string): path to the directory containing all of the raw wav files whose names you want to change
+	file (string): the name of the file
+	prepend (string): the string to prepend
+
+	Returns
+	-------
+	None
+	"""
+
+	if file.startswith('box'):
+		os.rename(root+file, root+prepend+file)
+
+
+
+
+
+### functions for handling wav file clips ###
+########################################################################################################################################################################
+
+#take a csv of features generated by the old pipeline and extract start, stop, and labels - can be useful for re-segmenting by species
 def segments_from_csv(source_csv, save_dir, species, save=True):
 
 	"""
@@ -501,47 +419,153 @@ def copy_wavs(source, destination, species = None):
 	#input is a dataframe with a column called source_file
 	#example file name for clips BK_24224x25894_ltr1_pup1_ch2_3700_m_358_302_fr0_p5_2021-10-22_11-05-10_clip_0_scratch.wav
 
-def get_metadata(frame):
-
-	columns = frame.columns
-
-	if 'species' in columns:
-		print('species column already exists...')
-	else:
-		frame['species'] = [i[:2] for i in frame['source_file']]
-
-	if 'sex' in columns:
-		print('sex column already exists...')
-	else:
-		frame['sex'] = [i.split('_')[6] for i in frame['source_file']]
-
-	if 'age' in columns or 'age_in_days' in columns:
-		print('age column already exists...')
-	else:
-		frame['age'] = [int(i.split('_')[10][1:]) for i in frame['source_file']]
-
-	if 'individual' in columns:
-		print('individual column already exists...')
-	else:
-		frame['individual'] = [i.split('_clip')[0] for i in frame['source_file']]
-
-	if 'weight' in columns or 'weight_mg' in columns or 'weight_g' in columns:
-		print('weight column already exists...')
-	else:
-		frame['weight_mg'] = [i.split('_')[5] for i in frame['source_file']]
-
-	if 'removal_flag' in columns:
-		print('removal flag column already exists...')
-	else:
-		frame['removal_flag'] = [int(i.split('_')[9][-1]) if not i.split('_')[9] == 'nan' else 'nan' for i in frame['source_file']]
-
-	if 'label' in columns:
-		print('label column already exists...')
-	else:
-		frame['label'] = [i.split('_')[-1].split('.')[0] if i.split('_')[-1].split('.')[0] in ['cry', 'whistle', 'scratch'] else 'nan' for i in frame['source_file']]
-
-	return frame
-
 def get_pup_features(frame):
 	by_pup = frame
 	return by_pup
+
+
+
+
+#def get_metadata(frame):
+#
+#	columns = frame.columns
+#
+#	if 'species' in columns:
+#		print('species column already exists...')
+#	else:
+#		frame['species'] = [i[:2] for i in frame['source_file']]
+#
+#	if 'sex' in columns:
+#		print('sex column already exists...')
+#	else:
+#		frame['sex'] = [i.split('_')[6] for i in frame['source_file']]
+#
+#	if 'age' in columns or 'age_in_days' in columns:
+#		print('age column already exists...')
+#	else:
+#		frame['age'] = [int(i.split('_')[10][1:]) for i in frame['source_file']]
+#
+#	if 'individual' in columns:
+#		print('individual column already exists...')
+#	else:
+#		frame['individual'] = [i.split('_clip')[0] for i in frame['source_file']]
+#
+#	if 'weight' in columns or 'weight_mg' in columns or 'weight_g' in columns:
+#		print('weight column already exists...')
+#	else:
+#		frame['weight_mg'] = [i.split('_')[5] for i in frame['source_file']]
+#
+#	if 'removal_flag' in columns:
+#		print('removal flag column already exists...')
+#	else:
+#		frame['removal_flag'] = [int(i.split('_')[9][-1]) if not i.split('_')[9] == 'nan' else 'nan' for i in frame['source_file']]
+#
+#	if 'label' in columns:
+#		print('label column already exists...')
+#	else:
+#		frame['label'] = [i.split('_')[-1].split('.')[0] if i.split('_')[-1].split('.')[0] in ['cry', 'whistle', 'scratch'] else 'nan' for i in frame['source_file']]
+#
+#	return frame
+
+
+# def aggregate_das_predictions(save_dir, predictions_dir, model_dict, iteration_dict):
+# """
+# 	Collect predictions csvs from different species and das models into a single csv for evaluation using combine dataframes
+# 
+# 	Parameters
+# 	----------
+# 	save_dir (str): full path to the directory where the combined csv will be saved
+# 	
+# 	predictions_dir (str): the path to the directory containing all the predictions directories for each species, their different models and iterations of prediction from those models
+# 
+# 	model_dict (dict): dictionary where the keys are species and the values are the models
+# 	
+# 	iteration_dict (dict): dictionary where the keys are species and the values are the iteration of each model you want to combine
+# 
+# 	Returns
+# 	-------
+# 	a dataframe of predictions for all species with a column for model and iteration
+# 	also saves this dataframe as a csv to save_dir
+# 
+# 	"""
+# 
+# 	
+# 
+# 
+# 
+# 	
+def combine_dataframes(source_dir, save_dir, save_name, file_format, include_string, exclude_string, paths_list=None):
+
+	"""
+	combine multiple csvs from a single directory (default) or list of paths into one. This should replace combine_annotation and combine_prediction.
+
+	Parameters
+	----------
+	paths_list (list): a list of full paths to the csvs to be combined
+	
+	source_dir (string): the path to the directory containing the annotation csvs to be combined
+
+	save_dir (string): the path to the directory where the combined csv will be saved
+	
+	save_name (string): name of the combined csv to be saved
+	
+	file_format (string): '.csv' or '.feather'
+	
+	include_sting (string): only combine files with this string in their name
+	
+	exclude_string (string): ignore files with this in their name
+
+	Returns
+	-------
+	all_files (dataframe): the combined dataframe
+
+	"""
+	assert file_format in ['.csv', '.wav']
+    
+	if paths_list == None and source_dir != None:
+		sources = [os.path.join(source_dir,i) for i in os.listdir(source_dir) if i.endswith(file_format) and exclude_string not in i and not i.startswith('.') and include_string in i]
+		combined = []
+		
+	elif paths_list != None and source_dir == None:
+		sources=paths_list
+		combined=[]
+        
+    
+		
+	elif paths_list == None and source_dir == None:
+		print('provide either a list of paths or a directory containing all the files to be combined')
+		
+	elif paths_list != None and source_dir != None:
+		print('provide either a list of paths or a directory containing all the files to be combined, not both')
+	
+	if file_format == '.csv':
+
+		for i in sources:
+			temp = pd.read_csv(i)
+			if len(i) != 0:
+				combined.append(temp)
+			else:
+				print(i, 'has no vocalizations')
+
+		all_files = pd.concat(combined)
+		all_files.to_csv(os.path.join(save_dir,save_name)+'.csv', index=False)
+		print('saved the combined dataframe to',save_dir+save_name+file_format)
+		return all_files
+	
+	elif file_format == '.feather':
+
+		for i in sources:
+			temp = pd.read_feather(i)
+			if len(i) != 0:
+				combined.append(temp)
+			else:
+				print(i, 'has no vocalizations')
+
+		all_files = pd.concat(combined)
+		all_files = all_files.reset_index(drop=True)
+		all_files.to_feather(os.path.join(save_dir,save_name)+'.feather')
+		print('saved the combined dataframe to', save_dir+save_name+file_format)
+		return all_files
+			
+
+
