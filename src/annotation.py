@@ -1030,11 +1030,12 @@ def clean_background_labels(frame, save_dir, save_name):
 	return cleaned_df
 	
 	
-def concat_for_das(voc_clips_dir, voc_clips_list, spacer_wav, save_dir, save_name, label, margin):
+def concat_annotated_clips(voc_clips_dir, voc_clips_list, spacer_wav, save_dir, save_name, label, margin):
     """
-    concatenate vocalizations annotated from umap and generate an annotations file for das
-    optionally include a margin to trim the annotated start and stop time by
-    which can help remove short (~2ms) silent periods before and after many cries
+    interleve vocalizations annotated from umap with a random background noise
+    and generate an annotations file of the vocalizations start and stop times
+    optionally include a margin to trim the annotated start and stop time by some amount
+    which can help remove short (~2ms) silent periods before and after vocalizations
 
     Parameters
     ----------
