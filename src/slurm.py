@@ -10,7 +10,8 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir):
     Write sbatch job files to run warbleR_feature_extraction.R on a computing cluster. 
     
     Required processing steps:
-        1. You have a csv of all pups to process with a column called species, which will be used to group the features into directories
+        1. You have a csv of all pups to process with a column called species, which will be used to group the features into directories ('species' can be any label with which it makes sense to group vocal features
+        eg treatment, microphone channel)
         2. You have a directory containing one wav clip for every vocalization in the above csv (no subdirectories)
     
 
