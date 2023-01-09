@@ -14,7 +14,7 @@ from PIL import Image
 import shutil	
 import seaborn as sns 
 from scipy.ndimage.filters import gaussian_filter
-
+from librosa.feature import rms
 from src.spectrogramming import ava_get_spec
 
 #definitely keep - documented now on evernote 20230105
@@ -955,3 +955,85 @@ def load_parameters(save_dir, save_name):
 			params_dict = json.load(fp)
 	print('loaded parameters from:\n\t', save_path)
 	return params_dict
+def get_silence(pup, audio_dir, seg_dir, save_dir, margin):
+    """
+    get clip of nonvocal background from each recording to use as a noise floor
+    take a pup wav file, gets its corresponding segment file, then returns some example images of silence 
+    pup is the name of the raw wav file with the '.wav' extension removed
+    audio_dir is the directory containing all of the raw audio
+    save_dir is the directory where wav clips of silence will be written
+    """
+    
+    #get the segments
+    print('getting starts and stops..')
+    segments_name = pup+'_annotations.csv'
+    seg_df = pd.read_csv(seg_dir+segments_name)
+    
+    #get the silent intervals
+    silence_stops = seg_df['start_seconds'][1:]
+    silence_starts = seg_df['stop_seconds'][:-1]
+    print('there are', len(silence_starts), 'clips to peruse...')
+
+    #get the audio
+    print('getting audio..')
+    wav_name = pup+'.wav'
+    fs, audio = wavfile.read(audio_dir+wav_name)
+
+    print('getting clips...')
+    rms_values = []
+    
+    if len(seg_df) > 0: #if there are vocalizations, looks through the silent periods for good ones
+        for stop, start in zip(silence_stops, silence_starts):
+            silence_length = stop-start
+    
+
+            if .2 < silence_length < 5:
+
+
+                #clip the clip
+                clip_name = pup+'_silence-clip_'+'.wav'
+                start= int((start+margin)*fs)
+                stop=  int((stop-margin)*fs)
+                clip = audio[start:stop] #get the clip
+                t,f,spec = stft(clip, noverlap=256, nperseg=1024, fs=fs)
+                spec = np.log(np.abs(spec))
+                print(clip_name)
+
+                plt.figure(figsize=[30,5])
+                plt.imshow(spec, origin='lower')
+                plt.show()
+
+                val = input("looks ok? (y/n/exit)")
+                if val == 'y':
+                    if clip_name not in os.listdir(save_dir):
+                        print('saving clip...')
+                        wavfile.write(save_dir + clip_name, fs, clip) #write the clip to a wav
+                        return
+                    else:
+                        print('clip already exists...')
+                        continue
+                elif val == 'n':
+                    #clips+=1
+                    continue
+                elif val =='exit':
+                    return
+                else:
+                    print('type y (looks good) or n (see the next one)')
+    
+    else: #if no vocs, just pick a random 2 s clip
+        #clip the clip
+        print('no vocs, saving this clip...')
+        clip_name = pup+'_silence-clip_'+'.wav'
+        start = 3*fs
+        stop = 4*fs
+        clip = audio[start:stop] #get the clip
+        t,f,spec = stft(clip, noverlap=256, nperseg=1024, fs=fs)
+        spec = np.log(np.abs(spec))
+        print(clip_name)
+
+        plt.figure(figsize=[30,5])
+        plt.imshow(spec, origin='lower')
+        plt.show()
+        wavfile.write(save_dir + clip_name, fs, clip) #write the clip to a wav
+    
+     print('done.')
