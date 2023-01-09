@@ -1,24 +1,47 @@
+#this file contains functions for training and evaluating machine learning models on acoustic features
+#of individual vocalizations
+
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.inspection import permutation_importance
 
-def get_metric_by_sample_size(voc_type, voc_df, sample_sizes, features, seed, test_size, target ='species', n_trees = 500):
+def get_metric_by_sample_size(voc_type, 
+                              voc_df, 
+                              sample_sizes, 
+                              features, 
+                              seed, 
+                              test_size, 
+                              target ='species', 
+                              n_trees = 500):
     """
-    train machine learning models (random )
+    train random forest models to predict species from acoustic features of a particular vocalization type
+    each using a different number of training examples
+    
+    Parameters
+    ----------
+    voc_type (str): The vocalization type you want to train on ('cry' or 'USV')
+    
+    voc_df (dataframe): a dataframe where each row is a vocalizations, columns are acoustic features, 
+                        and there is a column for annotated label 'cry' or 'USV' and species 
+                        (containing 'BW', 'BK', 'NB', 'SW', 'PO', 'LO', 'GO', and 'LL')
+    features (list): list of acoustic features to train on (some or all the acoustic feature column names in voc_df)
+    seed (int): random seed for reproducible sampling
+    test_size (list of int or int): number of vocalizations to sample from each species for training. If a list,
+                                    will iterate through each sample size and train a model for each
+    target (str): the labels to predict (default is 'species')
+    n_trees (int): the number of trees in the random forest (default is 500)
     
     """
     
     
-    
+    #check inputs
+    assert voc_type in ['cry', 'USV'], "voc_type must be 'cry' or 'USV'"
     
     #get the vocalizations that belong to voc_type
     all_annotations = voc_df.loc[voc_df['human_label'] == voc_type]
         
     # train multiple models on different numbers of vocalizations
     all_scores = []
-    all_importances = []
     
     #downsample
     all_downsampled = []
