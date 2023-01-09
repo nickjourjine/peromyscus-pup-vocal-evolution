@@ -18,18 +18,18 @@ import umap
 from scipy.signal import butter, lfilter
 
 #definitely keep - documented now on evernote 20230105
-def scipy_specgram_interpolate(data, 
-                          fs, 
-                          nperseg, 
-                          noverlap, 
-                          num_freq_bins, 
-                          num_time_bins , 
-                          min_freq, 
-                          max_freq, 
-                          fill_value, 
-                          max_dur, 
-                          spec_min_val, 
-                          spec_max_val): 
+def get_spectrogram(data, 
+                    fs, 
+                    nperseg, 
+                    noverlap, 
+                    num_freq_bins, 
+                    num_time_bins, 
+                    min_freq, 
+                    max_freq, 
+                    fill_value, 
+                    max_dur, 
+                    spec_min_val, 
+                    spec_max_val): 
     
 	#get the spectrogram
 	f,t,specgram = stft(data, fs, nperseg=nperseg, noverlap=noverlap) #default winow is Hann
@@ -51,6 +51,9 @@ def scipy_specgram_interpolate(data,
 	specgram = np.clip(specgram, 0.0, 1.0) #clip
 
 	return f,t,specgram
+
+
+
 
 
 def wavs_to_umap(segmenting_option, clips_dir, noise_floors_path, species, noise_floor, spec_params, num_to_process, filtered_clips, interpolate, version, save_root):
@@ -209,7 +212,7 @@ def specs_from_wavs(clips_dir, species, filtered_clips, noise_floors_path, noise
                 if noise_floors_path != None:
                     spec_params['fill_value'] = noise_floor
 
-                f, t, spec = scipy_specgram_interpolate(data = wav,
+                f, t, spec = get_spectrogram(data = wav,
                   fs=spec_params['fs'],
                   nperseg=spec_params['nperseg'],
                   noverlap=spec_params['noverlap'],
@@ -481,7 +484,7 @@ def specs_from_segs(seg_df_path,raw_wavs_dir, spec_params, num_to_process, speci
 				specs_list.append(downsampled_spec) #downsaple time and frequency 
 
 			elif interpolate:
-					f, t, spec = scipy_specgram_interpolate(data = wav,
+					f, t, spec = get_spectrogram(data = wav,
 					  fs=spec_params['fs'],
 					  nperseg=spec_params['nperseg'],
 					  noverlap=spec_params['noverlap'],
