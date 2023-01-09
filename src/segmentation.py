@@ -18,7 +18,7 @@ from scipy.ndimage.filters import gaussian_filter
 #definitely keep - documented now on evernote 20230105
 def get_amplitude_segments(audio_dir, save_dir, seg_params, species = None, thresholds_path=None, intersyll_threshold = None, duration_threshold = None, path_list = None):
     """
-    Segment audio files using get_onsets_offsets() from AVA. Writes a separate csv for non-vocal pups.
+    Segment audio files using ava_get_onsets_offsets() from AVA. Writes a separate csv for non-vocal pups.
 
     Parameters
     ----------
@@ -103,7 +103,7 @@ def get_amplitude_segments(audio_dir, save_dir, seg_params, species = None, thre
 
             print('SEGMENTING...', file.split('/')[-1])
             print('spec_min_val is', seg_params['spec_min_val'])
-            onsets, offsets, _, _ = get_onsets_offsets(audio=audio, p=seg_params)
+            onsets, offsets, _, _ = ava_get_onsets_offsets(audio=audio, p=seg_params)
 
 
             if len(onsets) != 0:
@@ -146,7 +146,7 @@ def get_amplitude_segments(audio_dir, save_dir, seg_params, species = None, thre
     
     
     
-def get_onsets_offsets(audio, p):
+def ava_get_onsets_offsets(audio, p):
 	"""
 	Segment the spectrogram using thresholds on its amplitude. From https://autoencoded-vocal-analysis.readthedocs.io/en/latest/_modules/ava/segmenting/amplitude_segmentation.html#get_onsets_offsets
 
