@@ -6,8 +6,32 @@ from datetime import date, datetime
 path_to_warbleR_extract = '/n/hoekstra_lab_tier1/Users/njourjine/manuscript/notebooks/00_manuscript/warbleR_extract.R'
 
 def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir):
+    """
+    Write sbatch job files to run warbleR_feature_extraction.R on a computing cluster. 
+    
+    Required processing steps:
+        1. You have a csv of all pups to process with a column called species, which will be used to group the features into directories
+        2. You have a directory containing one wav clip for every vocalization in the above csv (no subdirectories)
+    
 
-    assert dataset in ['bw_po_cf', 'bw_po_f1', 'bw_po_f2']
+    Parameters
+    ----------
+    dataset (str): one of ['bw_po_cf', 'bw_po_f1', 'bw_po_f2', development] (cross foster, F1, F2, development)
+    
+    save_root (str): the place where csv of acoustic features will be saved
+    
+    wav_root (str): the place containing the wav files (one per vocalization) to get features from
+    
+    script_dir (str): the place to save the sbatch scripts (one per species)
+    
+    Returns
+    -------
+    None
+
+    """
+    
+    
+    assert dataset in ['bw_po_cf', 'bw_po_f1', 'bw_po_f2', 'development']
     assert os.path.exists(save_root)
     assert os.path.exists(wav_root)
 
@@ -22,6 +46,10 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir):
 
     elif dataset == 'bw_po_f2':
         source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/bw_po_f2/amplitude_segmentated/20220921_040238/all_combined.csv')
+        species_list = sorted(source_df['species'].unique())
+        
+    elif dataset == 'development':
+        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/amplitude_segmentation/final/all_predictions.csv')
         species_list = sorted(source_df['species'].unique())
 
     #make a dictionary for paths
@@ -38,8 +66,6 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir):
     save_path = os.path.join(save_root,('_').join([today,time]))
     os.mkdir(save_path)
     
-    
-
     #populate the dictionary
     for species in species_list:
 
