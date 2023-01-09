@@ -245,54 +245,7 @@ def get_onsets_offsets(audio, p):
 
 
 #modified from https://autoencoded-vocal-analysis.readthedocs.io/en/latest/_modules/ava/segmenting/utils.html?highlight=get_spec
-def get_spec(audio, p):
-	"""
-	Get a spectrogram.
 
-	Much simpler than ``ava.preprocessing.utils.get_spec``.
-
-	Raises
-	------
-	- ``AssertionError`` if ``len(audio) < p['nperseg']``.
-
-	Parameters
-	----------
-	audio : numpy array of floats
-		Audio
-	p : dict
-		Spectrogram parameters. Should the following keys: `'fs'`, `'nperseg'`,
-		`'noverlap'`, `'min_freq'`, `'max_freq'`, `'spec_min_val'`,
-		`'spec_max_val'`
-
-	Returns
-	-------
-	spec : numpy array of floats
-		Spectrogram of shape [freq_bins x time_bins]
-	dt : float
-		Time step between time bins.
-	f : numpy.ndarray
-		Array of frequencies.
-	"""
-	#get log spectrograms between min_freq and max_fre1
-	assert len(audio) >= p['nperseg'], "len(audio): " + str(len(audio)) + ", nperseg: " + str(p['nperseg'])
-	f, t, spec = stft(audio, fs=p['fs'], nperseg=p['nperseg'], noverlap=p['noverlap'])
-	i1 = np.searchsorted(f, p['min_freq'])
-	i2 = np.searchsorted(f, p['max_freq'])
-	f, spec = f[i1:i2], spec[i1:i2]
-	spec = np.log(np.abs(spec))
-
-	#apply thresholds and scale
-	spec -= p['spec_min_val']
-	spec /= p['spec_max_val'] - p['spec_min_val']
-	spec = np.clip(spec, 0.0, 1.0)
-	return spec, t[1]-t[0], f
-   
-    
-    
-
-    
-    
-    
 def get_background_clips(raw_wavs_dir, save_location, all_segments_df, margin, start_column, stop_column, label_column = None, species = None, units = 's'):
 	"""
 	Use amplitude segmentation to generate wav clips of iter-vocalization audio. 
@@ -596,7 +549,6 @@ def prune_segments(predictions_df, intersyll_threshold,duration_threshold,annota
     
     
 #probably delete
-
 def prune_segments_testing(predictions_df_path, intersyll_threshold,duration_threshold, save_dir):
 	"""
 	version of prune_segments() that takes a path instead of a dataframe and doesn't return 
