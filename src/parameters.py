@@ -114,6 +114,76 @@ def load_parameters(save_dir, save_name):
 			params_dict = json.load(fp)
 	print('loaded parameters from:\n\t', save_path)
 	return params_dict
+def combine_dataframes(source_dir, save_dir, save_name, file_format, include_string, exclude_string, paths_list=None):
+
+	"""
+	combine multiple csvs from a single directory (default) or list of paths into one. This should replace combine_annotation and combine_prediction.
+
+	Parameters
+	----------
+	paths_list (list): a list of full paths to the csvs to be combined
+	
+	source_dir (string): the path to the directory containing the annotation csvs to be combined
+
+	save_dir (string): the path to the directory where the combined csv will be saved
+	
+	save_name (string): name of the combined csv to be saved
+	
+	file_format (string): '.csv' or '.feather'
+	
+	include_sting (string): only combine files with this string in their name
+	
+	exclude_string (string): ignore files with this in their name
+
+	Returns
+	-------
+	all_files (dataframe): the combined dataframe
+
+	"""
+	assert file_format in ['.csv', '.wav']
+    
+	if paths_list == None and source_dir != None:
+		sources = [source_dir+i for i in os.listdir(source_dir) if i.endswith(file_format) and exclude_string not in i and not i.startswith('.') and include_string in i]
+		combined = []
+		
+	elif paths_list != None and source_dir == None:
+		sources=paths_list
+		combined=[]
+		
+	elif paths_list == None and source_dir == None:
+		print('provide either a list of paths or a directory containing all the files to be combined')
+		
+	elif paths_list != None and source_dir != None:
+		print('provide either a list of paths or a directory containing all the files to be combined, not both')
+	
+	if file_format == '.csv':
+
+		for i in sources:
+			temp = pd.read_csv(i)
+			if len(i) != 0:
+				combined.append(temp)
+			else:
+				print(i, 'has no vocalizations')
+
+		all_files = pd.concat(combined)
+		all_files.to_csv(save_dir+save_name+'.csv', index=False)
+		print('saved the combined dataframe to',save_dir+save_name+file_format)
+		return all_files
+	
+	elif file_format == '.feather':
+
+		for i in sources:
+			temp = pd.read_feather(i)
+			if len(i) != 0:
+				combined.append(temp)
+			else:
+				print(i, 'has no vocalizations')
+
+		all_files = pd.concat(combined)
+		all_files = all_files.reset_index(drop=True)
+		all_files.to_feather(save_dir+save_name+'.feather')
+		print('saved the combined dataframe to', save_dir+save_name+file_format)
+		return all_files
 
 
 
