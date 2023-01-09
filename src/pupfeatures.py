@@ -335,7 +335,7 @@ def aggregate_pup(source_path, features, features_path):
 
 def aggregate_all_pups(source_list, dataset, save, save_name, save_dir, features, features_path):
     """
-    Aggregate warbleR acoustic features by pup, get pup metdata, and combine them into a single dataframe
+    Aggregate warbleR acoustic features by pup, get pup metdata, then combine them into a single dataframe
 
     Arguments:
         source_list (list): list of full paths to source_files (one per pup) you want to process
