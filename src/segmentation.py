@@ -15,6 +15,8 @@ import shutil
 import seaborn as sns 
 from scipy.ndimage.filters import gaussian_filter
 
+from src.spectrogramming import ava_get_spec
+
 #definitely keep - documented now on evernote 20230105
 def get_amplitude_segments(audio_dir, save_dir, seg_params, species = None, thresholds_path=None, intersyll_threshold = None, duration_threshold = None, path_list = None):
     """
@@ -185,7 +187,7 @@ def ava_get_onsets_offsets(audio, p):
 		if return_traces:
 			return [], [], None
 		return [], []
-	spec, dt, _ = get_spec(audio, p)
+	spec, dt, _ = ava_get_spec(audio, p)
 	min_syll_len = int(np.floor(p['min_dur'] / dt))
 	max_syll_len = int(np.ceil(p['max_dur'] / dt))
 	th_1, th_2, th_3 = p['th_1'], p['th_2'], p['th_3'] # thresholds
