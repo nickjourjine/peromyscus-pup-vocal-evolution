@@ -18,42 +18,7 @@ import umap
 import json
 import random
 
-
-#copied from spectrogramming
-def scipy_specgram_interpolate(data, 
-                          fs, 
-                          nperseg, 
-                          noverlap, 
-                          num_freq_bins, 
-                          num_time_bins , 
-                          min_freq, 
-                          max_freq, 
-                          fill_value, 
-                          max_dur, 
-                          spec_min_val, 
-                          spec_max_val): 
-    
-	#get the spectrogram
-	f,t,specgram = stft(data, fs, nperseg=nperseg, noverlap=noverlap) #default winow is Hann
-
-	#define the target frequencies and times for interpolation
-	duration = np.max(t)
-	target_freqs = np.linspace(min_freq, max_freq, num_freq_bins)
-	shoulder = 0.5 * (max_dur - duration)
-	target_times = np.linspace(0 - shoulder, duration+shoulder, num_time_bins)
-
-	#make it pretty
-	specgram = np.log(np.abs(specgram)+ 1e-12) # make a log spectrogram 
-	interp = interp2d(t, f, specgram, copy=False, bounds_error=False, fill_value=fill_value) #define the interpolation object - what does this do an do you need it??
-	target_times = np.linspace(0 - shoulder, duration+shoulder, num_time_bins) #define the time axis of the spectrogram
-	interp_spec = interp(target_times, target_freqs, assume_sorted=True) #interpolate -- you need to do this to interpolate the spectrogram values at the 64 frequency and 64 time points you have specified (ie, linearly sampled bw the min and max of time and frequency)
-	specgram = interp_spec
-	specgram -= spec_min_val #normalize
-	specgram /= (spec_max_val - spec_min_val) #normalize
-	specgram = np.clip(specgram, 0.0, 1.0) #clip
-
-	return f,t,specgram
-
+from src.spectrogramming import get_spectrogram
 
 #get silent intervals from a recording for which an annotation or prediction exists
 def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin, segtype=None, min_dur=2, max_dur=3, units = 's'):
@@ -308,7 +273,7 @@ def get_noise_floor(noise_dir, thresh, species, spec_params, verbose=False, save
 
 def check_test_set(frame, test_frame):
     """
-    check whether, which, and how many vocs in a sampling come from the test set
+    check whether, which, and how many vocs in a sampling come from a test set (ie, any vocalizations that will be used to evaluate models trained on the vocalizations annotated from UMAP)
 
     Parameters
     ----------
@@ -372,10 +337,11 @@ def sample_vocs(frame, num_to_sample, label_to_sample, random_state):
 
 def annotations_from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns, sampling_params, clips_dir, spec_type, df_save_dir, df_save_name, spec_params):
 	"""
-	take an	 hdbscan labeled umap embedding spectrogram data frame
-	display each spectrogram one at a time and ask for user input about its label
-	check whether the pup each vocalization came from is in the annotation set
-	save the dataframe with a column or user label and a column for whether or not this pup is in the annotation set
+	1. Take a data frame where each row is a vocalization, and columns are (a) linearized spectrogram
+    pixel intensity values (b) a cluster label (eg from HDBSCAN)
+	2. Display each spectrogram one at a time and ask for user input to label it
+	3. Check whether the pup each vocalization came from is in the annotation set
+	4. Save the dataframe with a column for user label and a column for whether or not this pup is in the annotation set
 
 	Parameters
 	----------
@@ -394,11 +360,13 @@ def annotations_from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_s
 	
 	clips_dir (str): path to the directory containing all of the wav clips for each species
 	
-	spec_type (str): if 'from_embedding', show the exact spectrogram that went into the embedding. if 'from_wav' make a new spectrogram directly from the wavfile (probably better for reducing annotation bias)
+	spec_type (str): if 'from_embedding', show the exact spectrogram that went into the embedding. if 'from_wav' make a new spectrogram directly from the wavfile using params in the dictionary spec_params
 	
 	df_save_dir (str): path to a directory where hand annotations will be saved as .feather
 	
 	df_save_name (str): name of the .feather file to save including file extension
+    
+    spec_params (dict): a dictionary of spectrogram parameters used to make spectrograms if spec_type is 'from_wav'
 
 	Returns
 	-------
@@ -456,7 +424,7 @@ def annotations_from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_s
 			
 		elif spec_type == 'from_wav':
 			fs, wav = wavfile.read(clips_dir+spec_name)
-			t,f,spec = scipy_specgram_interpolate(data = wav, 
+			t,f,spec = get_spectrogram(data = wav, 
                           fs=spec_params['fs'], 
                           nperseg=spec_params['nperseg'], 
                           noverlap=spec_params['noverlap'], 
@@ -1032,10 +1000,10 @@ def clean_background_labels(frame, save_dir, save_name):
 	
 def concat_annotated_clips(voc_clips_dir, voc_clips_list, spacer_wav, save_dir, save_name, label, margin):
     """
-    interleve vocalizations annotated from umap with a random background noise
-    and generate an annotations file of the vocalizations start and stop times
-    optionally include a margin to trim the annotated start and stop time by some amount
-    which can help remove short (~2ms) silent periods before and after vocalizations
+    1. Interleve vocalizations annotated from umap with a random background noise
+    2. generate an annotations file of the vocalizations start and stop times
+    3. optionally include a margin to trim the annotated start and stop time by some amount which can help remove short (~2ms) silent periods before and after vocalizations
+    Useful for organizing annotations into audio files in a way that makes training models easier.
 
     Parameters
     ----------
