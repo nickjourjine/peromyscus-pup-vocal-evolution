@@ -509,9 +509,10 @@ def specs_from_segs(seg_df_path,raw_wavs_dir, spec_params, num_to_process, speci
 	print('done.')
 	return specs_list, source_files
 
-#linearize spectrograms for umap
-def get_spec(audio, p):
+def ava_get_spec(audio, p):
 	"""
+    From https://autoencoded-vocal-analysis.readthedocs.io/en/latest/_modules/ava/segmenting/utils.html?highlight=get_spec#
+    
 	Get a spectrogram.
 
 	Much simpler than ``ava.preprocessing.utils.get_spec``.
