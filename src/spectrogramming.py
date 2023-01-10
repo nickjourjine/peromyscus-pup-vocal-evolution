@@ -501,15 +501,6 @@ def pad_spectrogram(spectrogram, pad_length):
         spectrogram, [(0, 0), (pad_left, pad_right)], "constant", constant_values=0
     )
 
-def butter_bandpass(lowcut, highcut, fs, order=5):
-    #functions to bandpass the audio 
-    #modified from https://timsainburg.com/python-mel-compression-inversion.html#python-mel-compression-inversion
-    nyq = 0.5 * fs
-    low = lowcut / nyq
-    high = highcut / nyq
-    b, a = butter(order, [low, high], btype="band")
-    return b, a
-
 def ava_get_spec(audio, p):
 	"""
     From https://autoencoded-vocal-analysis.readthedocs.io/en/latest/_modules/ava/segmenting/utils.html?highlight=get_spec#
