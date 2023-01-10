@@ -1,9 +1,7 @@
 #!/usr/bin/env Rscript
 
-#the purpose of this code is to use the warbleR package to extract low level acoustic features from vocalizations clips
+#the purpose of this code is to use the warbleR package to extract acoustic features from vocalizations clips
 #this script requires that all wav clips be in a single directory
-
-#modified from code in Keen 2021
 
 # set directories
 #wavs.dir is the location of all of the wav clips to be analyzed
@@ -39,10 +37,6 @@ est <- selection_table(whole.recs = T, extended = F, confirm.extended = F, pb = 
 #get acoustic features and mfccs
 print("calculating acoustic features.")
 sp <- specan(est,harmonicity = FALSE, fast = TRUE, pb = F)
-#cps.cf <- mfcc_stats(est, parallel=parallel::detectCores() - 1, path = wavs.dir)
-
-#combine the acoustic features and mfccs into a single csv and save
-#prms <- data.frame(est[, c("sound.files")], sp, cps.cf[, -c(1:2)])
 
 print("making dataframe.")
 prms <- data.frame(est[, c("sound.files")], sp)
