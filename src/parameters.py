@@ -1,17 +1,16 @@
-#this file contains functions for writing and reading parameters 
+#this file contains functions for writing and reading parameters and dealing with directories and 
+#dataframes for keeping track of different parameter choices for a given analysis
 
 def get_date_time():
     """
-    uses datetime to return a string with the format CurrentDate_CurrentTime,  e.g. 20220920_120000
+    Uses datetime to return a string with the format CurrentDate_CurrentTime,  e.g. 20220920_120000
     useful for naming directories
 
-    Parameters
-    ----------
-    None
+    Arguments:
+        None
 
-    Return
-    ------
-    The date and time as a string, e.g. 20220920_120000
+    Returns:
+        The date and time as a string in the format 'yyyymmdd_hhmmss'
 
     """
     
@@ -29,23 +28,16 @@ def get_date_time():
     return ('_').join([current_date,current_time])
 
 def save_parameters(params, save_dir, save_name):
-    """
-    NOTE this is a copy of the function in segmentation.py
-    TODO make your .py files into packages so you can import them instead of copying things like this
-    
-    save a dictionary as .json and double check if you want to overwrite it.
+    """  
+    Save a dictionary as .json and double check if you want to overwrite it.
 
-    Parameters
-    ----------
-    params_dict (dict): the parametes dictionary to be saved
+    Arguments:
+        params_dict (dict): the parametes dictionary to be saved
+        save_dir (str): the path to the place where the dictionary file will be saved
+        save_name (str): the name of the file without any file extension
 
-    save_dir (str): the path to the place where the dictionary file will be saved
-
-    save_name (str): the name of the file without any file extension
-
-    Returns
-    -------
-    None
+    Returns:
+        None
 
     """
 
@@ -93,18 +85,14 @@ def save_parameters(params, save_dir, save_name):
     
 def load_parameters(save_dir, save_name):
 	"""
-	load a dictionary from .json 
+	Load a dictionary from .json - does the reverse of save_parameters()
 
-	Parameters
-	----------
+	Arguments:
+	   save_dir (str): the path to the place where dictionary was saved
+	   save_name (str): the name of the .json file (including file extension)
 	
-	save_dir (str): the path to the place where dictionary was saved
-
-	save_name (str): the name of the .json file (including file extension)
-	
-	Returns
-	-------
-	params_dict (dict): the params dictionary you saved
+	Returns:
+	   params_dict (dict): the params dictionary you saved
 
 	"""
 	
@@ -117,27 +105,22 @@ def load_parameters(save_dir, save_name):
 def combine_dataframes(source_dir, save_dir, save_name, file_format, include_string, exclude_string, paths_list=None):
 
 	"""
-	combine multiple csvs from a single directory (default) or list of paths into one. This should replace combine_annotation and combine_prediction.
-
-	Parameters
-	----------
-	paths_list (list): a list of full paths to the csvs to be combined
-	
-	source_dir (string): the path to the directory containing the annotation csvs to be combined
-
-	save_dir (string): the path to the directory where the combined csv will be saved
-	
-	save_name (string): name of the combined csv to be saved
-	
-	file_format (string): '.csv' or '.feather'
-	
-	include_sting (string): only combine files with this string in their name
-	
-	exclude_string (string): ignore files with this in their name
+	Combine multiple csvs from a single directory (default) or list of paths into one. Useful for combining across species
+    or treatments while keeping raw data csvs intact.
+    
+	Arguments:
+    
+        paths_list (list): a list of full paths to the csvs to be combined
+        source_dir (string): the path to the directory containing the annotation csvs to be combined
+        save_dir (string): the path to the directory where the combined csv will be saved
+        save_name (string): name of the combined csv to be saved
+        file_format (string): '.csv' or '.feather'
+        include_sting (string): only combine files with this string in their name
+        exclude_string (string): ignore files with this in their name
 
 	Returns
 	-------
-	all_files (dataframe): the combined dataframe
+	   all_files (dataframe): the combined dataframe
 
 	"""
 	assert file_format in ['.csv', '.wav']
