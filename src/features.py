@@ -5,134 +5,11 @@ import os
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from librosa import rms
 from scipy.io import wavfile
 from scipy.signal import stft
 from scipy.signal import hilbert
 from datetime import date, datetime
-
-
-def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir):
-    """
-    Write sbatch job files to run warbleR_feature_extraction.R on a computing cluster. 
-    
-    Required processing steps:
-        1. You have a csv of all pups to process with a column called species, which will be used to group the features into directories ('species' can be any label with which it makes sense to group vocal features
-        eg treatment, microphone channel)
-        2. You have a directory containing one wav clip for every vocalization in the above csv (no subdirectories)
-    
-
-    Parameters
-    ----------
-    dataset (str): one of ['bw_po_cf', 'bw_po_f1', 'bw_po_f2', development] (cross foster, F1, F2, development)
-    
-    save_root (str): the place where csv of acoustic features will be saved
-    
-    wav_root (str): the place containing the wav files (one per vocalization) to get features from
-    
-    script_dir (str): the place to save the sbatch scripts (one per species)
-    
-    Returns
-    -------
-    None
-
-    """
-    
-    path_to_warbleR_extract = '/n/hoekstra_lab_tier1/Users/njourjine/manuscript/notebooks/00_manuscript/warbleR_extract.R'
-    
-    
-    assert dataset in ['bw_po_cf', 'bw_po_f1', 'bw_po_f2', 'development']
-    assert os.path.exists(save_root)
-    assert os.path.exists(wav_root)
-
-    #get the species - note that for the non_development data sets these are not strictly species but some other way of grouping the recordings (treatment/mic channel)
-    if dataset == 'bw_po_cf':
-        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/bw_po_cf/amplitude_segmentated/20220921_030633/all_combined.csv')
-        species_list = sorted(source_df['species'].unique())
-
-    elif dataset == 'bw_po_f1':
-        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/bw_po_f1/amplitude_segmentated/20220920_072032/all_combined.csv')
-        species_list = sorted(source_df['species'].unique())
-
-    elif dataset == 'bw_po_f2':
-        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/bw_po_f2/amplitude_segmentated/20220921_040238/all_combined.csv')
-        species_list = sorted(source_df['species'].unique())
-        
-    elif dataset == 'development':
-        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/amplitude_segmentation/final/all_predictions.csv')
-        species_list = sorted(source_df['species'].unique())
-
-    #make a dictionary for paths
-    paths_dict = {}
-    for species in species_list:
-        paths_dict[species] = {}
-
-    #make the path to the directory where features will be saved
-    today = str(date.today())
-    today = ('').join(today.split('-'))
-    now = str(datetime.now())
-    time = now.split(' ')[-1]
-    time = ('').join(time.split('.')[0].split(':'))
-    save_path = os.path.join(save_root,('_').join([today,time]))
-    os.mkdir(save_path)
-    
-    #populate the dictionary
-    for species in species_list:
-
-        #get the path to the raw clips for which features will be calculated
-        wav_path = os.path.join(wav_root, species)
-
-        #add the the paths to dictions
-        paths_dict[species]['wav_path'] = wav_path
-        paths_dict[species]['save_path'] = save_path
-        #for each species, write an .sbatch file (no job array here) with
-        lines = [
-        '#!/bin/bash\n', 
-        '#\n', 
-        '#SBATCH -J warb # A single job name for the array\n', 
-        '#SBATCH -p hoekstra,shared\n', 
-        '#SBATCH -c 1 # one core\n', 
-        '#SBATCH -t 0-8:00 # Running time of 8 hours\n', 
-        '#SBATCH --mem 16000 # Memory request of 24 GB\n', 
-        '#SBATCH -o '+species+'_warblExtract_%A_%a.out # Standard output\n', 
-        '#SBATCH -e '+species+'_warblExtract_%A_%a.err # Standard error\n',  
-        '\n', 
-        '#load R\n',
-        'module load intel/2017c impi/2017.4.239 FFTW/3.3.8-fasrc01\n',
-        'module load R/4.0.2-fasrc01\n',
-        'export R_LIBS_USER=$HOME/apps/R_4.0.2:$R_LIBS_USER\n',
-        '\n',
-        '#set directories\n',
-        'SPECIES='+ species + '\n',
-        'WAVSDIR='+ paths_dict[species]['wav_path'] +'\n',
-        'SAVEDIR='+ paths_dict[species]['save_path'] +'\n',
-        '\n',
-        '#run warbleR extract\n',
-        'Rscript /n/hoekstra_lab_tier1/Users/njourjine/manuscript/notebooks/00_manuscript/warbleR_extract.R'+" $SPECIES"+" $WAVSDIR"+" $SAVEDIR"
-        ]
-
-        #write lines
-        sbatch_name = 'warbleR_extract_'+species+'.sbatch'
-        sbatch_save_path = os.path.join(script_dir, sbatch_name)
-        with open(sbatch_save_path, 'w') as f:
-            f.writelines(lines)
-    
-    
-    #write a parent .sh script to run all of the species' sbatch scripts
-    parent_lines =  []
-    for species in species_list:
-        parent_lines.extend(['echo ', species, '\n',
-                           'sbatch warbleR_extract_', species, '.sbatch\n',
-                           'sleep 5\n'])
-        
-    sh_name = 'warbleR_extract_parent.sh'
-    sh_save_path = os.path.join(script_dir, sh_name)
-    with open(sh_save_path, 'w') as f:
-            f.writelines(parent_lines)
-            
-    print('wrote job scripts to:\n\t', script_dir)
-        
-
-
 
 
 def check_file_names(directory):
@@ -216,6 +93,16 @@ def check_file_names(directory):
 
 #get the meta data from checked file names and save it
 def get_meta_data(directory):
+    """
+	Get metadata recorded in a raw recording's file name.
+
+    Arguments:
+        Directory (string): path to the directory containing all of the raw wav files
+
+	Returns:
+        meta_df (dataframe): a dataframe where rows are recordings and columns are metadata categories.
+	"""
+    
 	files = [i for i in os.listdir(directory) if not i.startswith('.')] #ignore hidden files
 	all_rows = []
 
@@ -274,8 +161,8 @@ def get_filename_keys(dataset):
 
     Returns:
        filename_keys (list): a list of keys to name the information in each section of each recording's file name
-
     """
+    
     assert dataset in ['development', 'bw_po_f1', 'bw_po_cf', 'bw_po_f2']
 
     #these are keys for each dataset that correspond to information in each file name
@@ -308,9 +195,7 @@ def get_pup_metadata(source_path, dataset):
 
     Returns:
         meta_data (dict): a dictionary of the metadata, which can be further aggregated into a dataframe with multiple pups
-
     """
-
     #initialize dict and assert dataset is correct
     #"source_file" can refer to a raw recording from a pup (1 pup for each raw recording)
     #or it can refer to a single clip from a single vocalization from a pup
@@ -464,7 +349,7 @@ def aggregate_pup(source_path, features, features_path):
 
 def aggregate_all_pups(source_list, dataset, save, save_name, save_dir, features, features_path):
     """
-    Aggregate warbleR acoustic features by pup, get pup metdata, and combine them into a single dataframe
+    For each pup in source_list, aggregate warbleR acoustic features by pup, get pup metdata, then combine them into a single dataframe
 
     Arguments:
         source_list (list): list of full paths to source_files (one per pup) you want to process
@@ -527,9 +412,25 @@ def aggregate_all_pups(source_list, dataset, save, save_name, save_dir, features
             print('saved metadata to:\n\t', os.path.join(save_dir,metadata_save_name))
 
     return all_pup_features_df, all_pup_metadata_df
+        
+
+
 def get_snr(clip_path, noise_path, algorithm = 1, nperseg=512, noverlap = 256):
-#use noise clips generated by get_silence() to calculate signal to noise
-#based on snr calculations from warlber
+     """
+    Use noise clips generated by get_silence() to calculate signal to noise
+
+    Arguments:
+        clip_path (str): 
+        noise_path (str): 
+        algorithm (int): Must be one of 1, 2, or 3 (see comment below for description of each)
+        nperseg (int): nperseg for spectrogram generation. Default is 512.
+        noverlap (int): noverlap for spectrogram generation. Default is 256.
+    Returns:
+        all_pup_data (dataframe): a dictionary of the metadata, which can be further aggregated into a dataframe with multiple pups
+
+    """
+#use noise clips generated by annotation.get_noise_clip() to calculate signal to noise ratio
+#based on snr calculations from warlbeR (https://github.com/maRce10/warbleR)
 # 1: ratio of S mean amplitude envelope to N mean amplitude envelope (mean(env(S))/mean(env(N)))
 # 2: ratio of S amplitude envelope RMS (root mean square) to N amplitude envelope RMS (rms(env(S))/rms(env(N)))
 # 3: ratio of the difference between S amplitude envelope RMS and N amplitude envelope RMS to N amplitude envelope RMS ((rms(env(S)) - rms(env(N)))/rms(env(N)))
@@ -546,23 +447,9 @@ def get_snr(clip_path, noise_path, algorithm = 1, nperseg=512, noverlap = 256):
 		
 	elif algorithm == 2:
         
-        #get the spectrogram for the signal
-        sig_f, sig_t, signal_spec = stft(signal, fs, nperseg=nperseg, noverlap=noverlap) #default winow is Hann
-        signal_spec = np.abs(signal_spec) #remove complex
-        signal_spec = np.log(signal_spec)  #take log
-        signal_spec = (signal_spec - np.min(signal_spec)) / (np.max(signal_spec) - np.min(signal_spec)) #scale
-        
-        #get the spectrogram for the noise
-		noise_f, noise_t, noise_spec = stft(noise, fs, nperseg=nperseg, noverlap=noverlap) #default winow is Hann
-        noise_spec = np.abs(noise_spec) #remove complex
-        noise_spec = np.log(noise_spec)  #take log
-        noise_spec = (noise_spec - np.min(noise_spec)) / (np.max(noise_spec) - np.min(noise_spec)) #scale
-	
-        #calculate rms
-		signal_rms = rms(S = signal_spec, frame_length=nperseg, hop_length=noverlap)
-		noise_rms = rms(S = noise_spec, frame_length=nperseg, hop_length=noverlap)
-		snr = np.mean(signal_rms)/np.mean(noise_rms)
-		return signal_rms, snr
+        signal_rms = rms(y=np.array(signal, 'float'))
+        noise_rms = rms(y=np.array(noise, 'float'))
+        snr = np.mean(signal_rms)/np.mean(noise_rms)
 
 	elif algorithm == 3:
 		signal_amplitude_envelope = np.abs(hilbert(signal))
@@ -570,8 +457,22 @@ def get_snr(clip_path, noise_path, algorithm = 1, nperseg=512, noverlap = 256):
 		snr = (rms(y=signal_amplitude_envelope) - rms(y=noise_amplitdue_envelope))/rms(y=noise_amplitdue_envelope)
 		return snr
 
-#same as above but iterate through a directory - right now only deal with algorithm 1	
+#same as above but iterate through a directory - right now only deal with algorithms 1 and 2
 def get_snr_batch(clip_dir, noise_dir, species, algorithm):
+    
+    """
+    Run get_snr() on a batch of vocalization clips
+
+    Arguments:
+        clip_dir (str): the path to the directory containing the wav clips for which you want to get signal to noise
+        noise_dir (str): the path to the directory containing the background clip for each wav in clip_dir (one noise clip per recording)
+        algorithm (int): Must be one of 1, 2, or 3 (see comment below for description of each)
+        nperseg (int): nperseg for spectrogram generation. Default is 512.
+        noverlap (int): noverlap for spectrogram generation. Default is 256.
+    Returns:
+        all_pup_data (dataframe): a dictionary of the metadata, which can be further aggregated into a dataframe with multiple pups
+
+    """
 	
 	if species != None:
 		pups = [i for i in os.listdir(clip_dir) if i.startswith(species)]
@@ -608,6 +509,12 @@ def get_snr_batch(clip_dir, noise_dir, species, algorithm):
 			#update
 			sig2noise_list.append(snr)
 			source_files.append(pup)
+            
+        elif algorithm == 3: # very slow (getting envelope is slow)
+            signal_amplitude_envelope = np.abs(hilbert(signal))
+            noise_amplitdue_envelope = np.abs(hilbert(noise))
+            snr = (rms(y=signal_amplitude_envelope) - rms(y=noise_amplitdue_envelope))/rms(y=noise_amplitdue_envelope)
+		
 
 			
 	snr_df = pd.DataFrame()
@@ -660,5 +567,128 @@ def get_clipping_batch(wav_dir, threshold, species = None):
 	clipping_df['percent_clipped'] = clipping_percents
 	clipping_df['clipping_threshold'] = threshold*32767
 	return clipping_df
+def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir):
+    """
+    Write sbatch job files to run warbleR_feature_extraction.R on a computing cluster. 
+    
+    Required processing steps:
+        1. You have a csv of all pups to process with a column called species, which will be used to group the features into directories ('species' can be any label with which it makes sense to group vocal features
+        eg treatment, microphone channel)
+        2. You have a directory containing one wav clip for every vocalization in the above csv (no subdirectories)
+    
+
+    Parameters
+    ----------
+    dataset (str): one of ['bw_po_cf', 'bw_po_f1', 'bw_po_f2', development] (cross foster, F1, F2, development)
+    
+    save_root (str): the place where csv of acoustic features will be saved
+    
+    wav_root (str): the place containing the wav files (one per vocalization) to get features from
+    
+    script_dir (str): the place to save the sbatch scripts (one per species)
+    
+    Returns
+    -------
+    None
+
+    """
+    
+    path_to_warbleR_extract = '/n/hoekstra_lab_tier1/Users/njourjine/manuscript/notebooks/00_manuscript/warbleR_extract.R'
+    
+    
+    assert dataset in ['bw_po_cf', 'bw_po_f1', 'bw_po_f2', 'development']
+    assert os.path.exists(save_root)
+    assert os.path.exists(wav_root)
+
+    #get the species - note that for the non_development data sets these are not strictly species but some other way of grouping the recordings (treatment/mic channel)
+    if dataset == 'bw_po_cf':
+        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/bw_po_cf/amplitude_segmentated/20220921_030633/all_combined.csv')
+        species_list = sorted(source_df['species'].unique())
+
+    elif dataset == 'bw_po_f1':
+        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/bw_po_f1/amplitude_segmentated/20220920_072032/all_combined.csv')
+        species_list = sorted(source_df['species'].unique())
+
+    elif dataset == 'bw_po_f2':
+        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/bw_po_f2/amplitude_segmentated/20220921_040238/all_combined.csv')
+        species_list = sorted(source_df['species'].unique())
+        
+    elif dataset == 'development':
+        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/amplitude_segmentation/final/all_predictions.csv')
+        species_list = sorted(source_df['species'].unique())
+
+    #make a dictionary for paths
+    paths_dict = {}
+    for species in species_list:
+        paths_dict[species] = {}
+
+    #make the path to the directory where features will be saved
+    today = str(date.today())
+    today = ('').join(today.split('-'))
+    now = str(datetime.now())
+    time = now.split(' ')[-1]
+    time = ('').join(time.split('.')[0].split(':'))
+    save_path = os.path.join(save_root,('_').join([today,time]))
+    os.mkdir(save_path)
+    
+    #populate the dictionary
+    for species in species_list:
+
+        #get the path to the raw clips for which features will be calculated
+        wav_path = os.path.join(wav_root, species)
+
+        #add the the paths to dictions
+        paths_dict[species]['wav_path'] = wav_path
+        paths_dict[species]['save_path'] = save_path
+        #for each species, write an .sbatch file (no job array here) with
+        lines = [
+        '#!/bin/bash\n', 
+        '#\n', 
+        '#SBATCH -J warb # A single job name for the array\n', 
+        '#SBATCH -p hoekstra,shared\n', 
+        '#SBATCH -c 1 # one core\n', 
+        '#SBATCH -t 0-8:00 # Running time of 8 hours\n', 
+        '#SBATCH --mem 16000 # Memory request of 24 GB\n', 
+        '#SBATCH -o '+species+'_warblExtract_%A_%a.out # Standard output\n', 
+        '#SBATCH -e '+species+'_warblExtract_%A_%a.err # Standard error\n',  
+        '\n', 
+        '#load R\n',
+        'module load intel/2017c impi/2017.4.239 FFTW/3.3.8-fasrc01\n',
+        'module load R/4.0.2-fasrc01\n',
+        'export R_LIBS_USER=$HOME/apps/R_4.0.2:$R_LIBS_USER\n',
+        '\n',
+        '#set directories\n',
+        'SPECIES='+ species + '\n',
+        'WAVSDIR='+ paths_dict[species]['wav_path'] +'\n',
+        'SAVEDIR='+ paths_dict[species]['save_path'] +'\n',
+        '\n',
+        '#run warbleR extract\n',
+        'Rscript /n/hoekstra_lab_tier1/Users/njourjine/manuscript/notebooks/00_manuscript/warbleR_extract.R'+" $SPECIES"+" $WAVSDIR"+" $SAVEDIR"
+        ]
+
+        #write lines
+        sbatch_name = 'warbleR_extract_'+species+'.sbatch'
+        sbatch_save_path = os.path.join(script_dir, sbatch_name)
+        with open(sbatch_save_path, 'w') as f:
+            f.writelines(lines)
+    
+    
+    #write a parent .sh script to run all of the species' sbatch scripts
+    parent_lines =  []
+    for species in species_list:
+        parent_lines.extend(['echo ', species, '\n',
+                           'sbatch warbleR_extract_', species, '.sbatch\n',
+                           'sleep 5\n'])
+        
+    sh_name = 'warbleR_extract_parent.sh'
+    sh_save_path = os.path.join(script_dir, sh_name)
+    with open(sh_save_path, 'w') as f:
+            f.writelines(parent_lines)
+            
+    print('wrote job scripts to:\n\t', script_dir)
+        
+
+
+
 
    
