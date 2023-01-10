@@ -2,7 +2,7 @@ import numpy as np
 
 def gaussian_filter_1d(size,sigma):
     """
-    Return a 1D gaussian filter. Useful for smoothing trajectories.
+    Return a 1D gaussian filter for smoothing trajectories.
     
     Arguments:
         size (int): filter will range from -int(size/2) to int(size/2),size
@@ -18,6 +18,19 @@ def gaussian_filter_1d(size,sigma):
     return gaussian_filter
 
 def CalcDistance(X1,Y1,X2,Y2):
+    """
+    Return a 1D gaussian filter. Useful for smoothing trajectories.
+    
+    Arguments:
+        size (int): filter will range from -int(size/2) to int(size/2),size
+        sigma (float): sigma value for filter
+        
+    Returns:
+        gaussian_filter (list): the gaussian filter 
+    
+    """
+    
+    
     Distance= np.sqrt(np.square(X1-X2) + np.square(Y1-Y2)) 
     return Distance
 
@@ -49,13 +62,9 @@ def CalcEgocentricDirection(HeadX,HeadY,TailX, TailY, ObjectX, ObjectY):
         AngleEgoLoop[0,i] =np.arccos(dot_animal_object2)* 180 / np.pi
     return AngleEgoLoop
 
-
-def CalcSpeed(X, Y, Framerate):
-    
-    
-    Speed= np.sqrt( np.square(np.diff(X)) + np.square(np.diff(Y)))/(1/Framerate)
-    np.append(Speed, [0])
-    return np.append(Speed, [0])
+def CalcSpeed(DistanceXY, Framerate):
+    Speed= np.sqrt(np.square(np.diff(DistanceXY[:,0])) + np.square(np.diff(DistanceXY[:,1])))/(1/Framerate)
+    return Speed
 
 def RescaleBodyparts(Bodyparts):
     
