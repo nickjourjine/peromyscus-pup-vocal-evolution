@@ -63,7 +63,7 @@ def get_spectrogram(data, fs, nperseg, noverlap, num_freq_bins, num_time_bins, m
 
 	return f,t,specgram
 
-def wavs_to_umap(clips_dir, noise_floors_path, species, noise_floor, spec_params, num_to_process, filtered_clips, interpolate, version, save_root):
+def wavs_to_umap(clips_dir, noise_floors_path, species, noise_floor, spec_params, num_to_process, filtered_clips, version, save_root):
     
     """
     Take a list of wav files, generate spectrograms from those files, then find a umap embedding for those spectrograms and save the coordinates
@@ -78,8 +78,6 @@ def wavs_to_umap(clips_dir, noise_floors_path, species, noise_floor, spec_params
         num_to_process (int or 'all'): Number to process. If 'all' process everything. Useful for debugging to set this to 10 or 20 first.
         version (str): version name to keep track of multiple different umap embeddings of the same wavs
         save_root (str): path to the directory where the umap coordinates will be saved
-        
-        interpolate (bool): whether to use get_spectrogram (True) or scipy_specgram (False)
     
     Returns:
         None
@@ -93,8 +91,7 @@ def wavs_to_umap(clips_dir, noise_floors_path, species, noise_floor, spec_params
                                                noise_floor = noise_floor,
                                                spec_params=spec_params, 
                                                num_to_process = num_to_process, 
-                                               filtered_clips = filtered_clips, 
-                                               interpolate=interpolate)
+                                               filtered_clips = filtered_clips)
 										  
 	#linearize
 	specs_lin, shape = linearize_specs(specs_list)
