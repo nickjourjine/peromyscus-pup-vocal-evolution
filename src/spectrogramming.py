@@ -52,7 +52,7 @@ def get_spectrogram(data, fs, nperseg, noverlap, num_freq_bins, num_time_bins, m
 	shoulder = 0.5 * (max_dur - duration)
 	target_times = np.linspace(0 - shoulder, duration+shoulder, num_time_bins)
 
-	#make it pretty
+	#process
 	specgram = np.log(np.abs(specgram)+ 1e-12) # make a log spectrogram 
 	interp = interp2d(t, f, specgram, copy=False, bounds_error=False, fill_value=fill_value) #define the interpolation object 
 	target_times = np.linspace(0 - shoulder, duration+shoulder, num_time_bins) #define the time axis of the spectrogram
@@ -64,45 +64,38 @@ def get_spectrogram(data, fs, nperseg, noverlap, num_freq_bins, num_time_bins, m
 
 	return f,t,specgram
 
-
-
-
-
-def wavs_to_umap(segmenting_option, clips_dir, noise_floors_path, species, noise_floor, spec_params, num_to_process, filtered_clips, interpolate, version, save_root):
+def wavs_to_umap(clips_dir, noise_floors_path, species, noise_floor, spec_params, num_to_process, filtered_clips, interpolate, version, save_root):
+    
     """
-    Take a list of wav files, generate spectrograms from those files, then find a umap embedding for those spectrograms
+    Take a list of wav files, generate spectrograms from those files, then find a umap embedding for those spectrograms and save the coordinates
     
     Arguments:
-        segmenting_option
-        clips_dir
-        noise_floors_path
-        species
-        noise_floor
-        spec_params
-        num_to_process
-        filtered_clips
+        clips_dir (str): the directory containing all of the raw wav files
+        species (str, optional): optional two letter code for species if you want to just process one species
+        filtered_clips (list, optional): optional list of paths to wav files if you want to just process files in a given list
+        noise_floors_path (str, optional): optional path to a csv containing noise floors for the clips you want to process 
+        noise_floor (float, optional): optional minimum spectrogram value to be used if noise_floors_path not provided
+        spec_params (dict): dictionary of parameters for generating spectrograms
+        num_to_process (int or 'all'): Number to process. If 'all' process everything. Useful for debugging to set this to 10 or 20 first.
+        version (str): version name to keep track of multiple different umap embeddings of the same wavs
+        save_root (str): path to the directory where the umap coordinates will be saved
+        
         interpolate
-        version
-        save_root
     
     Returns:
         None
     
     """
-    
-    
-#go throught the full pipeline from spectrogram generation to umap plotting
-	
-		
+
 	#get spectrograms
 	specs_list, source_files = specs_from_wavs(clips_dir = clips_dir, 
-										  noise_floors_path=noise_floors_path, 
-										  species = species,
-										  noise_floor = noise_floor,
-										  spec_params=spec_params, 
-										  num_to_process = num_to_process, 
-										  filtered_clips = filtered_clips, 
-										  interpolate=interpolate)
+                                               noise_floors_path=noise_floors_path, 
+                                               species = species,
+                                               noise_floor = noise_floor,
+                                               spec_params=spec_params, 
+                                               num_to_process = num_to_process, 
+                                               filtered_clips = filtered_clips, 
+                                               interpolate=interpolate)
 										  
 	#linearize
 	specs_lin, shape = linearize_specs(specs_list)
@@ -152,20 +145,18 @@ def wavs_to_umap(segmenting_option, clips_dir, noise_floors_path, species, noise
 	df_umap['umap2'] = umap2
 	df_umap.to_feather(save_name)
 
-def specs_from_wavs(clips_dir, species, filtered_clips, noise_floors_path, noise_floor, spec_params, num_to_process, include_scratch = True, interpolate=False):
+def specs_from_wavs(clips_dir, species, filtered_clips, noise_floors_path, noise_floor, spec_params, num_to_process, interpolate=False):
     """
     Generate spectrograms for a list of wav files - useful for umap embedding
     
     Arguments:
-    
-        clips_dir
-        species
-        filtered_clips
-        noise_floors_path
-        noise_floor
-        spec_params
-        num_to_process
-        include_scratch
+        clips_dir (str): the directory containing all of the raw wav files
+        species (str, optional): optional two letter code for species if you want to just process one species
+        filtered_clips (list, optional): optional list of paths to wav files if you want to just process files in a given list
+        noise_floors_path (str, optional): optional path to a csv containing noise floors for the clips you want to process 
+        noise_floor (float, optional): optional minimum spectrogram value to be used if noise_floors_path not provided
+        spec_params (dict): dictionary of parameters for generating spectrograms
+        num_to_process (int or 'all'): Number to process. If 'all' process everything. Useful for debugging to set this to 10 or 20 first.
         interpolate
         
     Returns:
@@ -413,6 +404,20 @@ def spec_avg_from_list(spec_list):
     
     
 def show_specs(frame, num_freq_bins, num_time_bins, columns_to_drop):
+    """
+    Plot spectrogram images from a dataframe
+    
+    Arguments:
+       frame (dataframe): a dataframe of pixel values where each row is a spectrogram and columns are pixel IDs (eg output of save_umap)
+       num_freq_bins (int): number of frequency bins the spectrograms have
+       num_time_bins (int): number of time bins the spectrograms have
+       columns_to_drop (list of strings): columns that are not spectrogram pixel IDs
+    
+    Returns:
+        None
+    
+    """
+    
 	for i in range(len(frame)):
 		print(frame['source_file'].iloc[i])
 		to_plot = frame.drop(columns = columns_to_drop)
@@ -422,13 +427,47 @@ def show_specs(frame, num_freq_bins, num_time_bins, columns_to_drop):
 		plt.show()
 
 def files_from_umap(frame, umap1_name, umap2_name, umap1_thresh, umap2_thresh, source_dir):
+    """
+    Get the paths to the wav files in all or a portion of a umap embedding.
+    Useful for getting spectrograms and/or spectrograms averages from particular regions of UMAP space.
+    
+    Arguments:
+        frame (dataframe): a dataframe of pixel values where each row is a spectrogram and columns are pixel IDs
+        umap1_name (str): the column name in frame for the umap x coordinate
+        umap2_name (str): the column name in frame for the umap y coordinate
+        umap1_thresh (list of two floats): list of minimum and maximum of UMAP x coordinate from which to get paths
+        umap2_thresh (list of two floats): list of minimum and maximum of UMAP y coordinate from which to get paths
+        source_dir (str): path to the directory containing all of the wav clips that went into the embedding
+    
+    Returns:
+        source_files (list): list of paths to wall wav clips in the square defined by umap1_thresh and umap2_thresh
+    
+    """
 
     #get the spectrograms
     temp = frame[(frame[umap1_name] > umap1_thresh[0]) & (frame[umap1_name] < umap1_thresh[1]) & (frame[umap2_name] > umap2_thresh[0]) & (frame[umap2_name] < umap2_thresh[1])]
+    
+    #get the paths to their source files
     source_files = [source_dir+i for i in temp['source_file']]
     return source_files
 
 def spec_avg_from_umap(frame, umap1_name, umap2_name, umap1_thresh, umap2_thresh, num_freq_bins, num_time_bins):
+    """
+    Get an average of all the spectrograms in a region of umap space
+    
+    Arguments:
+        frame (dataframe): a dataframe of pixel values where each row is a spectrogram and columns are pixel IDs
+        umap1_name (str): the column name in frame for the umap x coordinate
+        umap2_name (str): the column name in frame for the umap y coordinate
+        umap1_thresh (list of two floats): list of minimum and maximum of UMAP x coordinate from which to get paths
+        umap2_thresh (list of two floats): list of minimum and maximum of UMAP y coordinate from which to get paths
+        num_freq_bins (int): number of frequency bins used to generate the spectrogram
+        num_time_bins (int): number of time bins used to generate the spectrogram
+    
+    Returns:
+        source_files (list): list of paths to wall wav clips in the square defined by umap1_thresh and umap2_thresh
+    
+    """
 
     #get the spectrograms
     temp = frame[(frame[umap1_name] > umap1_thresh[0]) & (frame[umap1_name] < umap1_thresh[1]) & (frame[umap2_name] > umap2_thresh[0]) & (frame[umap2_name] < umap2_thresh[1])]
@@ -443,9 +482,7 @@ def spec_avg_from_umap(frame, umap1_name, umap2_name, umap1_thresh, umap2_thresh
     
     #return the individual spectrograms
     return temp, avg_spec_image
-#TODO - properly comment this. Looks like segmenting_option doesn't do anything
 
-	
 #probably remove   
 def log_resize_spec(spec, scaling_factor):
 
@@ -506,8 +543,6 @@ def scipy_specgram(data,
 		
 	return f,t,specgram
 
-#function to generate spectrogram using interpolation a la Goffinet 2021	
-
 
 
 def ava_get_spec(audio, p):
@@ -525,6 +560,7 @@ def ava_get_spec(audio, p):
         dt (float): Time step between time bins.
         f (numpy.ndarray): Array of frequencies.
 	"""
+    
 	#get log spectrograms between min_freq and max_fre1
 	assert len(audio) >= p['nperseg'], "len(audio): " + str(len(audio)) + ", nperseg: " + str(p['nperseg'])
 	f, t, spec = stft(audio, fs=p['fs'], nperseg=p['nperseg'], noverlap=p['noverlap'])
@@ -538,9 +574,3 @@ def ava_get_spec(audio, p):
 	spec /= p['spec_max_val'] - p['spec_min_val']
 	spec = np.clip(spec, 0.0, 1.0)
 	return spec, t[1]-t[0], f
-    
-
-	
-
-	
-	
