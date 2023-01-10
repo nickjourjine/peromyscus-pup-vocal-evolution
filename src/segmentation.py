@@ -24,28 +24,19 @@ def get_amplitude_segments(audio_dir, save_dir, seg_params, species = None, thre
     """
     Segment audio files using ava_get_onsets_offsets() from AVA. Writes a separate csv for non-vocal pups.
 
-    Parameters
-    ----------
-    audio_dir (string): the path to the directory containing the raw wav files to be segmented
-
-    save_dir (string): the path to the directory where the start/stop csvs will be written (one for each recording)
-
-    species (string): optionally segment just one species, indicated by the two letter code (which should begin the name of each raw wav file)
-
-    thresholds_path (string): a path to a csv containing a noise floor for each file in one column and the file name in another. Optional.
-
-    intersyll_threshold (float): detected syllables separated by less than this number of seconds will be merged into one vocalization
-
-    duration_threshold (float): detected syllables shorter than this value will be ignored
-
-    seg_params (dict): the segmenting parameters
-
-    path_list (list): a list of paths to the audio to analyze (optionally use this if you don't want to segment every vocalization in the directory)
+    Arguments:
+        audio_dir (string): the path to the directory containing the raw wav files to be segmented
+        save_dir (string): the path to the directory where the start/stop csvs will be written (one for each recording)
+        species (string): optionally segment just one species, indicated by the two letter code (which should begin the name of each raw wav file)
+        thresholds_path (string): a path to a csv containing a noise floor for each file in one column and the file name in another. Optional.
+        intersyll_threshold (float): detected syllables separated by less than this number of seconds will be merged into one vocalization
+        duration_threshold (float): detected syllables shorter than this value will be ignored
+        seg_params (dict): the segmenting parameters
+        path_list (list): a list of paths to the audio to analyze (optionally use this if you don't want to segment every vocalization in the directory)
 
     Returns
     -------
-    None
-
+        None
     """
     all_wavs = [i for i in os.listdir(audio_dir) if i.endswith('.wav')]
     done = [i for i in os.listdir(save_dir) if i.endswith('.csv')]
@@ -160,29 +151,18 @@ def ava_get_onsets_offsets(audio, p):
 	below `p['th_1']`, whichever comes first. Syllable onset is determined
 	analogously.
 
-	Note
-	----
-	`p['th_1'] <= p['th_2'] <= p['th_3']`
+	Note: `p['th_1'] <= p['th_2'] <= p['th_3']`
 
-	Parameters
-	----------
-	audio : numpy.ndarray
-		Raw audio samples.
-	p : dict
-		Parameters.
-	return_traces : bool, optional
-		Whether to return traces. Defaults to `False`.
+	Arguments:
+        audio (numpy.ndarray): Raw audio samples.
+        p (dict): Parameters.
+        return_traces (bool): optional Whether to return traces. Defaults to `False`.
 
-	Returns
-	-------
-	onsets : numpy array
-		Onset times, in seconds
-	offsets : numpy array
-		Offset times, in seconds
-	traces : list of a single numpy array
-		The amplitude trace used in segmenting decisions. Returned if
-		`return_traces` is `True`.
-	amplitudes: a list of spectrogram amplitudes
+	Returns:
+        onsets (numpy array): Onset times, in seconds
+        offsets (numpy array): Offset times, in seconds
+        traces (list of a single numpy array): The amplitude trace used in segmenting decisions. Returned if `return_traces` is `True`.
+        amplitudes: a list of spectrogram amplitudes
 	"""
 
 	if len(audio) < p['nperseg']:
@@ -255,30 +235,20 @@ def get_background_clips(raw_wavs_dir, save_location, all_segments_df, margin, s
 	Use amplitude segmentation to generate wav clips of iter-vocalization audio. 
 	Similar to get_wav_clips except get the non-vocalization audio clips.
 
-	Parameters
-	----------
-	
-	raw_wavs_dir (string): the path to the directory containing the raw wav files.
-
-	save_location (string): the path to the directory where the clips should be saved.
-
-	all_segments_df (dataframe): the dataframe containing the segments infor for the entire data set - should contain at least the columns ['source_file', 'start_times', 'stop_times']
-
-	margin (float): a margin (in seconds) to be added before each start time and after each stop time
-
-	start_column (string): the name of the column in source_data that contains the vocalization start times
-
-	end_column (string): the name of the column in source_data that contains the vocalization stop times
-
-	label_column (string, optional): the name of the column in source_data that contains labels for each vocalization 
-
-	species (string): optional 2 letter code to process just one species' raw wav files
-
-	units (string): the temporal units for start and stop times (s or ms)
+	Arguments:
+        raw_wavs_dir (string): the path to the directory containing the raw wav files.
+        save_location (string): the path to the directory where the clips should be saved.
+        all_segments_df (dataframe): the dataframe containing at least the columns ['source_file', 'start_times', 'stop_times']
+        margin (float): a margin (in seconds) to be added before each start time and after each stop time
+        start_column (string): the name of the column in source_data that contains the vocalization start times
+        end_column (string): the name of the column in source_data that contains the vocalization stop times
+        label_column (string, optional): the name of the column in source_data that contains labels for each vocalization 
+        species (string): optional 2 letter code to process just one species' raw wav files
+        units (string): the temporal units for start and stop times (s or ms)
 
 	Returns
 	-------
-	None.
+	   None
 
 	"""
 
@@ -351,29 +321,20 @@ def get_wav_clips(wavs_dir, save_location, source_data, margin, start_column, en
 	"""
 	Use start and stop times of vocalizations to save individual clips as .wav files (one per detected voc)
 
-	Parameters
-	----------
-	wavs_dir (string): the path to the raw wav files that have already been segmented
-
-	save_location (string): the path to the directory where the clips should be saved
-
-	source_data (dataframe): should contain at least the columns ['source_file', 'start_times', 'stop_times']
-
-	margin (float): a margin (in seconds) to be added before each start time and after each stop time
-
-	start_column (string): the name of the column in source_data that contains the vocalization start times
-
-	end_column (string): the name of the column in source_data that contains the vocalization stop times
-
-	label_column (string): the name of the column in source_data that contains labels for each vocalization (optional)
-
-	species (string): optional 2 letter code to process just one species' raw wav files
-
-	units (string): the temporal units for start and stop times (s or ms)
+	Arguments:
+        wavs_dir (string): the path to the raw wav files that have already been segmented
+        save_location (string): the path to the directory where the clips should be saved
+        source_data (dataframe): should contain at least the columns ['source_file', 'start_times', 'stop_times']
+        margin (float): a margin (in seconds) to be added before each start time and after each stop time
+        start_column (string): the name of the column in source_data that contains the vocalization start times
+        end_column (string): the name of the column in source_data that contains the vocalization stop times
+        label_column (string): the name of the column in source_data that contains labels for each vocalization (optional)
+        species (string): optional 2 letter code to process just one species' raw wav files
+        units (string): the temporal units for start and stop times (s or ms)
 
 	Returns
 	-------
-	None.
+	   None
 
 	"""
 
@@ -443,16 +404,14 @@ def get_intersyllable_intervals(df, annotation=False):
 	"""
 	Get intersyllable inervals, which is used to determine which vocalizations should be merged and which should not
 
-	Parameters
-	----------
-	df (dataframe): a dataframe of vocalization start and stop predictions (ie the result of segment wavs)
-	
-	annotation (bool): if True, include labels for each segment
+	Arguments
+        df (dataframe): a dataframe of vocalization start and stop predictions (ie the result of segment wavs)
+        annotation (bool): if True, include labels for each segment
 
 	Returns
 	-------
-	all_intersyllables_df (dataframe): a dataframe where each row is a vocalization and the column is the intersyllabl 
-									   interval between the end of that vocalization and the next
+	   all_intersyllables_df (dataframe): a dataframe where each row is a vocalization with columns for ioi and annotation names if annotation is true
+       just_intersyllable (list): a list of the intersyllable inetrvals 
 
 	"""
 
@@ -489,19 +448,14 @@ def prune_segments(predictions_df, intersyll_threshold,duration_threshold,annota
 	Merge vocalizations with an intersyllable interval below a threshold (ms) from each other and drop vocalizations 
 	that are shorter than a threshold (ms)
 
-	Parameters
-	----------
-	predictions_df (dataframe): a dataframe of vocalization start and stop predictions (ie the result of segment wavs)
+	Arguments:
+        predictions_df (dataframe): a dataframe of vocalization start and stop predictions (ie the result of segment wavs)
+        intersyll_threshold (float): the time in seconds below which two vocalizations will be merged into one
+        duration_threshold (float): the duration in seconds below which predicted vocalizations will be ignored
+        annotation (bool): if True, include a column of labels
 
-	intersyll_threshold (float): the time in seconds below which two vocalizations will be merged into one
-
-	duration_threshold (float): the duration in seconds below which predicted vocalizations will be ignored
-	
-	annotation (bool): if True, include a column of labels
-
-	Returns
-	-------
-	all_new_segments (datframe): predictions_df with the mergers and deletions carried out.
+	Returns:
+	   all_new_segments (datframe): predictions_df with the mergers and deletions carried out.
 
 	"""
 
@@ -630,21 +584,16 @@ def evaluate_predictions(prediction_csv, annotations_csv, annotations_dir, toler
     """
     Evaluate predictions on annotated recordings.
 
-    Parameters
-    ----------
-    prediction_csv (string): the path to the csv containing the predictions (start and stop times) for annotated audio
-
-    annotations_csv: the path to the csv containing the containing the hand annoataions (start and stop times) for annotated audio
-
-    annotations_dir: the directory containing annotations_csv (TODO: improve this)
-
-    tolerance (float): the tolerance window in seconds before and after an annotated start or stop within which a predicted start or stop will be counted as correct
-
-    verbose (bool): if True, print out progress status on each annotated file
+    Arguments:
+        prediction_csv (string): the path to the csv containing the predictions (start and stop times) for annotated audio
+        annotations_csv: the path to the csv containing the containing the hand annoataions (start and stop times) for annotated audio
+        annotations_dir: the directory containing annotations_csv (TODO: improve this)
+        tolerance (float): tolerance window in seconds before/after an annotated start/stop within which predicted start/stop will be counted as correct
+        verbose (bool): if True, print out progress status on each annotated file
 
     Returns
     -------
-    df (dataframe): a dataframe of the the accuracy, precision and F1 scores for predictions on each annotated audio clip.
+        df (dataframe): a dataframe of the the accuracy, precision and F1 scores for predictions on each annotated audio clip.
 
     """
 
