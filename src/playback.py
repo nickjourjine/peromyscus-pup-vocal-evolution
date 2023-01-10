@@ -15,6 +15,7 @@ def gaussian_filter_1d(size,sigma):
     
     filter_range = np.linspace(-int(size/2),int(size/2),size)
     gaussian_filter = [1 / (sigma * np.sqrt(2*np.pi)) * np.exp(-x**2/(2*sigma**2)) for x in filter_range]
+    
     return gaussian_filter
 
 def CalcDistance(X1,Y1,X2,Y2):
@@ -38,6 +39,18 @@ def CalcDistance(X1,Y1,X2,Y2):
     return Distance
 
 def CalcSpeed(DistanceXY, Framerate):
+    
+    """
+    Calculate the speed of the dam between consecutive tracking timepoints
+    
+    Arguments:
+        DistanceXY (numoy array): array of dams location (x, y coordinates) 
+        Framerate (float): camera framerate
+        
+    Returns:
+        Speed (float): the speed of the dam
+    
+    """
     
     Speed= np.sqrt(np.square(np.diff(DistanceXY[:,0])) + np.square(np.diff(DistanceXY[:,1])))/(1/Framerate)
     return Speed
