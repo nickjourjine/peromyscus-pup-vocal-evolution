@@ -1,15 +1,22 @@
 import numpy as np
 
 def gaussian_filter_1d(size,sigma):
+    """
+    Return a 1D gaussian filter. Useful for smoothing trajectories.
+    
+    Arguments:
+        size (int): filter will range from -int(size/2) to int(size/2),size
+        sigma (float): sigma value for filter
+        
+    Returns:
+        gaussian_filter (list): the gaussian filter 
+    
+    """
+    
     filter_range = np.linspace(-int(size/2),int(size/2),size)
     gaussian_filter = [1 / (sigma * np.sqrt(2*np.pi)) * np.exp(-x**2/(2*sigma**2)) for x in filter_range]
     return gaussian_filter
 
-def analysis_bodyparts(Bodyparts,Species, Date, *args, **kwargs):
-    Sex=kwargs.get('Sex')
-    Trial=kwargs.get('Trial')
-    Object=kwargs.get('Object')
-    
 def CalcDistance(X1,Y1,X2,Y2):
     Distance= np.sqrt(np.square(X1-X2) + np.square(Y1-Y2)) 
     return Distance
@@ -44,28 +51,24 @@ def CalcEgocentricDirection(HeadX,HeadY,TailX, TailY, ObjectX, ObjectY):
 
 
 def CalcSpeed(X, Y, Framerate):
+    
+    
     Speed= np.sqrt( np.square(np.diff(X)) + np.square(np.diff(Y)))/(1/Framerate)
     np.append(Speed, [0])
     return np.append(Speed, [0])
 
 def RescaleBodyparts(Bodyparts):
     
-#     #Extract Midspine
+    #Extract Midspine
     
     CentroidX=Bodyparts[:,18]
     CentroidY=Bodyparts[:,19]
     ConfidenceCentroid=Bodyparts[:,20]
     CentroidConfidenceIndexes=np.where(ConfidenceCentroid>0.9999)
-    
-#     print(f"size of centroid {np.shape(CentroidX)}")
-#     print(f"size of bodyparts {np.shape(Bodyparts)}")
-#     print(f'Centroid {CentroidX}')
-#     print(f'Bodypartsx {Bodyparts[:,18]}')
 
     AbsoluteMaxStretch=15
     
     #ScaleBodyparts
-    #Bodyparts=beh.RescaleBodyparts(Bodyparts_pre,Scale)
     ScaleX= (np.quantile(CentroidX[CentroidConfidenceIndexes],0.99)-np.quantile(CentroidX[CentroidConfidenceIndexes],0.01))/48.26
     ScaleY=(np.quantile(CentroidY[CentroidConfidenceIndexes],0.99)-np.quantile(CentroidY[CentroidConfidenceIndexes],0.01))/26
     ShiftX=np.quantile(CentroidX[CentroidConfidenceIndexes],0.01)
