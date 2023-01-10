@@ -14,33 +14,34 @@ def get_metric_by_sample_size(voc_type,
                               target ='species', 
                               n_trees = 500):
     """
-    train random forest models to predict species from acoustic features of a particular vocalization type
+    Train random forest models to predict species from acoustic features of a particular vocalization type
     each using a different number of training examples
     
-    Parameters
-    ----------
-    voc_type (str): The vocalization type you want to train on ('cry' or 'USV')
-    
-    voc_df (dataframe): a dataframe where each row is a vocalizations, columns are acoustic features, 
-                        and there is a column for annotated label 'cry' or 'USV' and species 
-                        (containing 'BW', 'BK', 'NB', 'SW', 'PO', 'LO', 'GO', and 'LL')
-    features (list): list of acoustic features to train on (some or all the acoustic feature column names in voc_df)
-    seed (int): random seed for reproducible sampling
-    test_size (list of int or int): number of vocalizations to sample from each species for training. If a list,
-                                    will iterate through each sample size and train a model for each
-    target (str): the labels to predict (default is 'species')
-    n_trees (int): the number of trees in the random forest (default is 500)
+    Arguments:
+        voc_type (str): The vocalization type you want to train on ('cry' or 'USV')
+        voc_df (dataframe): a dataframe where each row is a vocalizations, columns are acoustic features,  label (cry or USV) and species
+        features (list): list of acoustic features to train on (some or all the acoustic feature column names in voc_df)
+        seed (int): random seed for reproducible sampling
+        test_size (list of int or int): number of vocalizations to sample from each species for training. If a list,
+                                        will iterate through each sample size and train a model for each
+        target (str): the labels to predict (default is 'species')
+        n_trees (int): the number of trees in the random forest (default is 500)
+        
+    Returns:
+        all_scores (dataframe): a dataframe where each row is a model trained on a different amoutn of data and columns are evaluation metrics
     
     """
-    
-    
+      
     #check inputs
     assert voc_type in ['cry', 'USV'], "voc_type must be 'cry' or 'USV'"
+    assert 'human_label' in voc_df.columns, "'human_label' must be a column name in voc_df"
+    assert 'species' in voc_df.columns, "'species' must be a column name in voc_df"
+    assert set(voc_df['species'].unique()) == set(['BW', 'BK', 'NB', 'SW', 'PO', 'LO', 'GO', 'LL']), "species must be ['BW', 'BK', 'NB', 'SW', 'PO', 'LO', 'GO', 'LL']"
     
     #get the vocalizations that belong to voc_type
     all_annotations = voc_df.loc[voc_df['human_label'] == voc_type]
         
-    # train multiple models on different numbers of vocalizations
+    #train multiple models on different numbers of vocalizations
     all_scores = []
     
     #downsample
@@ -103,7 +104,6 @@ def get_metric_by_sample_size(voc_type,
          
     #combine the reports from all the sample sizes toegther
     all_scores = pd.concat(all_scores)
-    all_importances = pd.concat(all_importances)
     print('done.')
 
     return all_scores
