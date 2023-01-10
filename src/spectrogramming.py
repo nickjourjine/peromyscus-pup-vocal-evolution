@@ -80,7 +80,7 @@ def wavs_to_umap(clips_dir, noise_floors_path, species, noise_floor, spec_params
         version (str): version name to keep track of multiple different umap embeddings of the same wavs
         save_root (str): path to the directory where the umap coordinates will be saved
         
-        interpolate
+        interpolate (bool): whether to use get_spectrogram (True) or scipy_specgram (False)
     
     Returns:
         None
@@ -157,7 +157,7 @@ def specs_from_wavs(clips_dir, species, filtered_clips, noise_floors_path, noise
         noise_floor (float, optional): optional minimum spectrogram value to be used if noise_floors_path not provided
         spec_params (dict): dictionary of parameters for generating spectrograms
         num_to_process (int or 'all'): Number to process. If 'all' process everything. Useful for debugging to set this to 10 or 20 first.
-        interpolate
+        interpolate (bool): whether to use get_spectrogram (True) or scipy_specgram (False)
         
     Returns:
         specs_list (list): a list of spectrograms as numpy arrays
