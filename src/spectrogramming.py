@@ -484,13 +484,6 @@ def spec_avg_from_umap(frame, umap1_name, umap2_name, umap1_thresh, umap2_thresh
     return temp, avg_spec_image
 
 #probably remove   
-def log_resize_spec(spec, scaling_factor):
-
-    resize_shape = [int(np.log(np.shape(spec)[1]) * scaling_factor), np.shape(spec)[0]]
-    spec = (spec * 255).astype(np.float32) #make data type and range compatible with Image
-    resize_spec = np.array(Image.fromarray(spec).resize(resize_shape))
-    return resize_spec
-
 def ava_get_spec(audio, p):
 	"""
     From https://autoencoded-vocal-analysis.readthedocs.io/en/latest/_modules/ava/segmenting/utils.html?highlight=get_spec#
