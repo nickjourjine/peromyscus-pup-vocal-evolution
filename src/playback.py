@@ -18,39 +18,38 @@ def gaussian_filter_1d(size,sigma):
     
     return gaussian_filter
 
-def CalcDistance(X1,Y1,X2,Y2):
+def calc_distance(X1,Y1,X2,Y2):
     """
-    Calculate the distance between two points
+    Calculate the distance between two points (eg dam and speaker)
     
     Arguments:
-        X1 (float): x coordinate of point 1
-        X2 (float): y coordinate of point 1
-        Y1 (float): x coordinate of point 2
-        Y2 (float): y coordinate of point 2
+        X1 (float or array of float): x coordinate of point 1
+        X2 (float or array of float): y coordinate of point 1
+        Y1 (float or array of float): x coordinate of point 2
+        Y2 (float or array of float): y coordinate of point 2
         
         
     Returns:
-        Distance (float): the distance between the points 
+        distance (float): the distance between the points 
     
     """
     
-    Distance= np.sqrt(np.square(X1-X2) + np.square(Y1-Y2)) 
-    
-    return Distance
+    distance= np.sqrt(np.square(X1-X2) + np.square(Y1-Y2)) 
+    return distance
 
-def CalcSpeed(DistanceXY, Framerate):
+def calc_speed(distanceXY, framerate):
     
     """
     Calculate the speed of the dam between consecutive tracking timepoints
     
     Arguments:
-        DistanceXY (numoy array): array of dams location (x, y coordinates) 
-        Framerate (float): camera framerate
+        distanceXY (numoy array): array of dams location (x, y coordinates) 
+        framerate (float): camera framerate
         
     Returns:
-        Speed (float): the speed of the dam
+        speed (float): the speed of the dam
     
     """
     
-    Speed= np.sqrt(np.square(np.diff(DistanceXY[:,0])) + np.square(np.diff(DistanceXY[:,1])))/(1/Framerate)
-    return Speed
+    speed= np.sqrt(np.square(np.diff(DistanceXY[:,0])) + np.square(np.diff(DistanceXY[:,1])))/(1/Framerate)
+    return speed
