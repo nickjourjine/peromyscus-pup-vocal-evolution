@@ -518,32 +518,6 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     return y
 
 #function to generate spectrograms
-def scipy_specgram(data, 
-                   fs, 
-                   nperseg, 
-                   noverlap, 
-                   thresh, 
-                   scaling_factor = None):
-    
-	#get the spectrogram
-	f,t,specgram = stft(data, fs, nperseg=nperseg, noverlap=noverlap) #default winow is Hann
-
-	#make it pretty
-	specgram = np.abs(specgram) #remove complex
-	specgram = np.log(specgram)  # take log
-
-	if scaling_factor!= None:
-		specgram = log_resize_spec(specgram, scaling_factor= scaling_factor)    
-		specgram[specgram < thresh] = thresh
-		specgram = (specgram - np.min(specgram)) / (np.max(specgram) - np.min(specgram))
-
-	else: 
-		specgram[specgram < thresh] = thresh
-		specgram = (specgram - np.min(specgram)) / (np.max(specgram) - np.min(specgram))
-		
-	return f,t,specgram
-
-
 
 def ava_get_spec(audio, p):
 	"""
