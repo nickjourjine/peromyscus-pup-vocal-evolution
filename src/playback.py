@@ -19,23 +19,22 @@ def gaussian_filter_1d(size,sigma):
 
 def CalcDistance(X1,Y1,X2,Y2):
     """
-    Return a 1D gaussian filter. Useful for smoothing trajectories.
+    Calculate the distance between two points
     
     Arguments:
-        size (int): filter will range from -int(size/2) to int(size/2),size
-        sigma (float): sigma value for filter
+        X1 (float): x coordinate of point 1
+        X2 (float): y coordinate of point 1
+        Y1 (float): x coordinate of point 2
+        Y2 (float): y coordinate of point 2
+        
         
     Returns:
-        gaussian_filter (list): the gaussian filter 
+        Distance (float): the distance between the points 
     
     """
     
+    Distance= np.sqrt(np.square(X1-X2) + np.square(Y1-Y2)) 
     
-    Distance= np.sqrt(np.square(X1-X2) + np.square(Y1-Y2)) 
-    return Distance
-
-def CalcDistanceToPoint(X1,Y1,X2,Y2):
-    Distance= np.sqrt(np.square(X1-X2) + np.square(Y1-Y2)) 
     return Distance
 
 def CalcHeadDirectionEars(LeftX,LeftY,RightX, RightY):
