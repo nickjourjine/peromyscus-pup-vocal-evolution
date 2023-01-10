@@ -491,16 +491,6 @@ def log_resize_spec(spec, scaling_factor):
     resize_spec = np.array(Image.fromarray(spec).resize(resize_shape))
     return resize_spec
 
-def pad_spectrogram(spectrogram, pad_length):
-    """ Pads a spectrogram to being a certain length
-    """
-    excess_needed = pad_length - np.shape(spectrogram)[1]
-    pad_left = np.floor(float(excess_needed) / 2).astype("int")
-    pad_right = np.ceil(float(excess_needed) / 2).astype("int")
-    return np.pad(
-        spectrogram, [(0, 0), (pad_left, pad_right)], "constant", constant_values=0
-    )
-
 def ava_get_spec(audio, p):
 	"""
     From https://autoencoded-vocal-analysis.readthedocs.io/en/latest/_modules/ava/segmenting/utils.html?highlight=get_spec#
