@@ -18,19 +18,31 @@ import umap
 from scipy.signal import butter, lfilter
 
 #definitely keep - documented now on evernote 20230105
-def get_spectrogram(data, 
-                    fs, 
-                    nperseg, 
-                    noverlap, 
-                    num_freq_bins, 
-                    num_time_bins, 
-                    min_freq, 
-                    max_freq, 
-                    fill_value, 
-                    max_dur, 
-                    spec_min_val, 
-                    spec_max_val): 
-    
+def get_spectrogram(data, fs, nperseg, noverlap, num_freq_bins, num_time_bins, min_freq, max_freq, fill_value, max_dur, spec_min_val, spec_max_val): 
+    """
+    Make a spectrogram with a pre-determined number of frequency and time bins. Useful for generating spectrograms that are all the same shape.
+    Modified from: https://autoencoded-vocal-analysis.readthedocs.io/en/latest/_modules/ava/preprocessing/utils.html?highlight=spec
+        
+    Arguments:
+        data (numpy array): the wav file you want to make a spectrogram from
+        nperseg (int): nperseg for spectrogram generation
+        noverlap (int): noverlap for spectrogram generation with scipy.
+        num_freq_bins (int): number of frequency bins for spectrogram
+        num_time_bins (int): number of time bins for spectrogram
+        min_freq (int): minimum frequency for spectrogram
+        max_freq (int): maximum frequency for spectrogram
+        fill_value (float): the value to use for points outside of the interpolation domain (for scipy.interpolate.interp2d)
+        max_dur (float): the duration of the longest vocalization you want to consider - determines the time axis scaling
+        spec_min_val (float): maximum spectrogram value
+        spec_max_vale (float): minimum spectogram value
+
+    Returns
+    -------
+        f (numpy array): the frequency bins of the spectrogram
+        t (numpy array): the time bins of the spectrogram
+        specgram: the spectrogram
+    """
+
 	#get the spectrogram
 	f,t,specgram = stft(data, fs, nperseg=nperseg, noverlap=noverlap) #default winow is Hann
 
@@ -42,12 +54,12 @@ def get_spectrogram(data,
 
 	#make it pretty
 	specgram = np.log(np.abs(specgram)+ 1e-12) # make a log spectrogram 
-	interp = interp2d(t, f, specgram, copy=False, bounds_error=False, fill_value=fill_value) #define the interpolation object - what does this do an do you need it??
+	interp = interp2d(t, f, specgram, copy=False, bounds_error=False, fill_value=fill_value) #define the interpolation object 
 	target_times = np.linspace(0 - shoulder, duration+shoulder, num_time_bins) #define the time axis of the spectrogram
-	interp_spec = interp(target_times, target_freqs, assume_sorted=True) #interpolate -- you need to do this to interpolate the spectrogram values at the 64 frequency and 64 time points you have specified (ie, linearly sampled bw the min and max of time and frequency)
+	interp_spec = interp(target_times, target_freqs, assume_sorted=True) #interpolate 
 	specgram = interp_spec
 	specgram -= spec_min_val #normalize
-	specgram /= (spec_max_val - spec_min_val) #normalize
+	specgram /= (spec_max_val - spec_min_val) #scale
 	specgram = np.clip(specgram, 0.0, 1.0) #clip
 
 	return f,t,specgram
@@ -57,6 +69,28 @@ def get_spectrogram(data,
 
 
 def wavs_to_umap(segmenting_option, clips_dir, noise_floors_path, species, noise_floor, spec_params, num_to_process, filtered_clips, interpolate, version, save_root):
+    """
+    Take a list of wav files, generate spectrograms from those files, then find a umap embedding for those spectrograms
+    
+    Arguments:
+        segmenting_option
+        clips_dir
+        noise_floors_path
+        species
+        noise_floor
+        spec_params
+        num_to_process
+        filtered_clips
+        interpolate
+        version
+        save_root
+    
+    Returns:
+        None
+    
+    """
+    
+    
 #go throught the full pipeline from spectrogram generation to umap plotting
 	
 		
@@ -117,30 +151,31 @@ def wavs_to_umap(segmenting_option, clips_dir, noise_floors_path, species, noise
 	df_umap['umap1'] = umap1
 	df_umap['umap2'] = umap2
 	df_umap.to_feather(save_name)
-	
-	#TODO: get this to work
-	# if coordinates_save_name not in coordinates_save_dir:
-# 		save_umap(df_umap, umap1, umap2, save_name = save_name, file_format = file_format)
-# 	else:
-# 		print('already processed...')
-
-
-
-#modified from https://github.com/timsainb/avgn_paper/blob/V2/avgn/signalprocessing/create_spectrogram_dataset.py
-
-
-
-
 
 def specs_from_wavs(clips_dir, species, filtered_clips, noise_floors_path, noise_floor, spec_params, num_to_process, include_scratch = True, interpolate=False):
-
-#TODO
-#document this
-#make the variable names especially 'filtered_clips' more intuitive
+    """
+    Generate spectrograms for a list of wav files - useful for umap embedding
+    
+    Arguments:
+    
+        clips_dir
+        species
+        filtered_clips
+        noise_floors_path
+        noise_floor
+        spec_params
+        num_to_process
+        include_scratch
+        interpolate
+        
+    Returns:
+        specs_list (list): a list of spectrograms as numpy arrays
+        source_files (list): a list of file names for each spectrogram
+    """
     specs_list = []
     source_files = []
-    nans = [] #what is this line doing? TODO remove it
 
+    # print info about what is about to happen (avoid starting a long process with the wrong parameters)
     if species != None and filtered_clips == None:
         wav_paths = [clips_dir+i for i in os.listdir(clips_dir) if i.startswith(species) and not i.startswith('.')]
         print('generating all specs from', species, '...')
@@ -208,24 +243,25 @@ def specs_from_wavs(clips_dir, species, filtered_clips, noise_floors_path, noise
 
         elif interpolate:
 
-                #if using this method with noise thresholds, fill value should be set to the recoridng specific threshold
+                #if using this method with noise thresholds, fill value should be set to the recording specific threshold
+                #generated by annotation.get_noise_floor()
                 if noise_floors_path != None:
                     spec_params['fill_value'] = noise_floor
 
                 f, t, spec = get_spectrogram(data = wav,
-                  fs=spec_params['fs'],
-                  nperseg=spec_params['nperseg'],
-                  noverlap=spec_params['noverlap'],
-                  num_freq_bins=spec_params['num_freq_bins'],
-                  num_time_bins=spec_params['num_time_bins'] ,
-                  min_freq=spec_params['min_freq'],
-                  max_freq=spec_params['max_freq'],
-                  fill_value = spec_params['fill_value'],
-                  max_dur=spec_params['max_duration'],
-                  spec_min_val=noise_floor, 
-                  spec_max_val=spec_params['spec_max_val'])
+                                             fs=spec_params['fs'],
+                                             nperseg=spec_params['nperseg'],
+                                             noverlap=spec_params['noverlap'],
+                                             num_freq_bins=spec_params['num_freq_bins'],
+                                             num_time_bins=spec_params['num_time_bins'],
+                                             min_freq=spec_params['min_freq'],
+                                             max_freq=spec_params['max_freq'],
+                                             fill_value = spec_params['fill_value'],
+                                             max_dur=spec_params['max_duration'],
+                                             spec_min_val=noise_floor, 
+                                             spec_max_val=spec_params['spec_max_val'])
 
-                specs_list.append(spec) #downsaple time and frequency
+                specs_list.append(spec) #downsample time and frequency
 
 
     #pad
@@ -240,17 +276,19 @@ def specs_from_wavs(clips_dir, species, filtered_clips, noise_floors_path, noise
 
 
 
-#make spectrograms from a segments dataframe without saving wav clips first - useful for trouble shooting (faster)
-
-
-
-
-
-
-
-
 
 def linearize_specs(specs_list):
+    """
+    Linearize each spectrogram in a list. For UMAP prepprocessing.
+    
+    Arguments:
+    
+        specs_list (list): a list of spectrograms as numpy arrays (eg, output of specs from wavs)
+        
+    Returns:
+        shape (numpy array): the shape of np.array(specs list)
+        specs_lin (list): a list of linearized spectrograms as numpy arrays
+    """
 	
 	#print some useful info
 	specs = np.array(specs_list)
@@ -262,10 +300,23 @@ def linearize_specs(specs_list):
 	num_features = specs.shape[-1]*specs.shape[-2]
 	specs_lin = specs.reshape([-1, num_features])
 	print('done.')
+    
 	return specs_lin, shape
 
 #z score linearized spectrograms and return a dataframe of the zscored specs and original specs
 def zscore_specs(specs_lin, source_files):
+    """
+    Zscore each spectrogram in a list. For UMAP preprocessing.
+    
+    Arguments:
+        specs_lin (list): a list of linearized spectrograms as numpy arrays (eg, output of linearize_specs)
+        
+    Returns:
+        df_umap (data frame): a dataframe where each row is a spectrogram and each column is a pixel (plus a source_file column with the path to the wav)
+        zscored (numpy array): an array of zscored, linearized spectrograms for umap embedding
+    """
+    
+    
 	#make a dataframe
 	df_umap = pd.DataFrame(specs_lin)
 	df_umap['source_file'] = source_files
@@ -278,7 +329,18 @@ def zscore_specs(specs_lin, source_files):
 
 #take a data frame of zscored spectrograms (no source_file information) and find a umap embedding
 #return umap 1 and umap 2 coordinates as separate arrays
+
 def get_umap(standardized_features):
+    """
+    Find a umap embedding for a set of spectrograms
+    
+    Arguments:
+        standardized_features (numpy array): an array of linearized, zscored spectrograms (eg output of zscore specs)
+        
+    Returns:
+        umap1 (numpy array): x coordinates of umap embedding for each vocalization
+        umap2 (numpy array): y coordinares of umap embedding for each vocalization
+    """
 	
 	#find an embedding
 	print('finding a umap embedding...')
@@ -293,16 +355,28 @@ def get_umap(standardized_features):
 
 	return umap1, umap2
 
-#save a dataframe of all spectrograms and their umap coordinates
 
 
 
-
-
-
-#probably keep and make cells to use them in Segmenting and UMAP.ipynb
 def save_umap(df_umap, umap1, umap2, save_name = None, file_format = 'feather'):
-	
+	"""
+    Save coordinates of a umap embedding and their corresponding source files
+    
+    Arguments:
+        df_umap (dataframe): dataframe of non-zscored spectrograms (eg output of zscore specs)
+        umap1 (numpy array): x coordinates of umap embedding for each vocalization
+        umap2 (numpy array): y coordinares of umap embedding for each vocalization
+        save_name (str): the path to the file you want to write
+        file_format (str): must be one of 'csv' or 'feather'. feather is better for very large files
+        
+        
+    Returns:
+        None
+    """
+    
+    #check inputs
+    assert file_format in ['csv', 'feather']
+    
 	if file_format == 'csv':
 		df_umap['embedding_dim_1'] = umap1
 		df_umap['embedding_dim_2'] = umap2
@@ -319,11 +393,24 @@ def save_umap(df_umap, umap1, umap2, save_name = None, file_format = 'feather'):
 # make an aggregate spectrogram from  list of source files (wav clips)
 
 def spec_avg_from_list(spec_list):
+    """
+    Get the average spectrogram from a list of spectrograms
+    
+    Arguments:
+        spec_list (list): a list of nonlinearized spectrograms as numpy arrays
+    
+    Returns:
+        avg_spec_image (numpy array): the average of spectrograms in the list
+    
+    """
+    
     #get average
     avg_spec_image = np.mean(spec_list, axis=0)
         
     return avg_spec_image
      
+    
+    
     
 def show_specs(frame, num_freq_bins, num_time_bins, columns_to_drop):
 	for i in range(len(frame)):
@@ -423,121 +510,20 @@ def scipy_specgram(data,
 
 
 
-def specs_from_segs(seg_df_path,raw_wavs_dir, spec_params, num_to_process, species=None, units= 's', interpolate=False):
-
-	#list to add the spectrograms to
-	specs_list = []
-
-	#get the dataframe with the start and stop times (segments)
-	seg_df = pd.read_csv(seg_df_path)
-	
-	#optionally subset by species
-	if species != None:
-		seg_df = seg_df.loc[seg_df['species'] == species]
-		
-	#get the names of the raw audio files to be segmented
-	source_files = [raw_wavs_dir+i for i in seg_df['source_file'].unique()]
-	
-	#get the segments
-	segments_list = [[i,j] for i,j in zip(seg_df['start_seconds'], seg_df['stop_seconds'])]
-	print('ready to make', len(segments_list), 'spectrograms from', len(source_files), 'recordings')
-	
-	for file in source_files:
-	
-		#get the information just for this file
-		temp = seg_df.loc[seg_df['source_file'] == file]
-	
-		#get the audio
-		fs, wav = wavfile.read(file)
-		
-		#get the segments
-		segments_list = [[i,j] for i,j in zip(temp['start_seconds'], temp['stop_seconds'])]
-		
-		#get the spectrograms
-		for segment in segments_list:
-			#get the wav clip
-			if units == 's':
-				clip = wav[fs*segment[0]:fs*segment[1]]
-			elif units == 'ms':
-				clip = wav[fs*(segment[0]/1000):fs*(segment[1]/1000)]
-				
-			#make a spectrogram
-			if not interpolate:  
-
-				#bandpass the audio 
-				wav = butter_bandpass_filter(wav, 
-											 spec_params['min_freq'], 
-											 spec_params['max_freq'], 
-											 spec_params['fs'], 
-											 order=1)	
-											
-				#get the spectrogram
-				f, t, spec = scipy_specgram(wav, 
-									  fs=spec_params['fs'], 
-									  nperseg=spec_params['nperseg'], 
-									  noverlap=spec_params['noverlap'], 
-									  thresh=noise_floor, 
-									  scaling_factor = spec_params['log_resize_scaling_factor']) 
-			
-				#add downsampled version to specs
-				downsampled_spec = spec[:,::spec_params['downsample_by']]
-				specs_list.append(downsampled_spec) #downsaple time and frequency 
-
-			elif interpolate:
-					f, t, spec = get_spectrogram(data = wav,
-					  fs=spec_params['fs'],
-					  nperseg=spec_params['nperseg'],
-					  noverlap=spec_params['noverlap'],
-					  num_freq_bins=spec_params['num_freq_bins'],
-					  num_time_bins=spec_params['num_time_bins'] ,
-					  min_freq=spec_params['min_freq'],
-					  max_freq=spec_params['max_freq'],
-					  fill_value = spec_params['fill_value'],
-					  max_dur=spec_params['max_duration'],
-					  spec_min_val=noise_floor, 
-					  spec_max_val=spec_params['spec_max_val'])
-
-					specs_list.append(spec) #downsaple time and frequency
-		
-	#pad the spectrograms (only needed if interpolate=False)
-	if not interpolate:
-			print('padding spectrograms...')
-			syll_lens = [np.shape(i)[1] for i in specs_list]
-			pad_length = np.max(syll_lens)
-			specs_list = [pad_spectrogram(i, pad_length) for i in specs_list]
-
-	print('done.')
-	return specs_list, source_files
-
 def ava_get_spec(audio, p):
 	"""
     From https://autoencoded-vocal-analysis.readthedocs.io/en/latest/_modules/ava/segmenting/utils.html?highlight=get_spec#
-    
-	Get a spectrogram.
+    Get a spectrogram. Much simpler than ``ava.preprocessing.utils.get_spec``.
 
-	Much simpler than ``ava.preprocessing.utils.get_spec``.
-
-	Raises
-	------
-	- ``AssertionError`` if ``len(audio) < p['nperseg']``.
-
-	Parameters
-	----------
-	audio : numpy array of floats
-		Audio
-	p : dict
-		Spectrogram parameters. Should the following keys: `'fs'`, `'nperseg'`,
-		`'noverlap'`, `'min_freq'`, `'max_freq'`, `'spec_min_val'`,
+	Arguments: 
+	   audio (Audio): numpy array of floats
+	   p (dict): Spectrogram parameters. Should the following keys: `'fs'`, `'nperseg'`,`'noverlap'`, `'min_freq'`, `'max_freq'`, `'spec_min_val'`,
 		`'spec_max_val'`
 
-	Returns
-	-------
-	spec : numpy array of floats
-		Spectrogram of shape [freq_bins x time_bins]
-	dt : float
-		Time step between time bins.
-	f : numpy.ndarray
-		Array of frequencies.
+	Returns:
+        spec (numpy array of floats): Spectrogram of shape [freq_bins x time_bins]
+        dt (float): Time step between time bins.
+        f (numpy.ndarray): Array of frequencies.
 	"""
 	#get log spectrograms between min_freq and max_fre1
 	assert len(audio) >= p['nperseg'], "len(audio): " + str(len(audio)) + ", nperseg: " + str(p['nperseg'])
