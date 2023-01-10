@@ -11,7 +11,6 @@ from scipy.signal import stft
 from scipy.signal import hilbert
 from datetime import date, datetime
 
-
 def check_file_names(directory):
 	"""
 	check that file names follow the naming convention used by other functions
