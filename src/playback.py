@@ -234,26 +234,27 @@ def get_data(path_to_data, save, save_dir):
         MedianResponseTimeUSV=np.median(TimeUSVs)
 
         #Aggregate the data for this iteration of the loop
-        playback_df.append({ "species" : Species ,
-                                   "sex" : Sex ,
-                                  "id" : Identity,
-                                  "date":Date, 
-                                  "median_time_cry":MedianResponseTimeCry,
-                                  "median_time_USV": MedianResponseTimeUSV,
-                                  "max_speed_cry": SpeedCryMax,
-                                  "max_speed_USV": SpeedUSVMax,
-                                  "min_dist_cry":MinDistSpeakerCry  ,
-                                  "min_dist_USV":MinDistSpeakerWhis ,
-                                  "median_dist_cry":MedianDistSpeakerCry  ,
-                                  "median_dist_USV":MedianDistSpeakerWhis,
-                                  "distance_to_speaker": DistanceMouseSpeaker  ,
-                                  "nan_tracking": NaNTracking , 
-                                  "time_vector": TimeVector ,
-                                  "all_cry_bool": AllCrybool,
-                                  "all_USV_bool": AllUSVbool,
-                                  "index_onset_cry":CBoolFlipsup ,
-                                  "index_onset_USV":UBoolFlipsup ,
-                                  "end_experiment": EndOfExperiment
+        playback_df.append({ "species" : Species,
+                            "sex" : Sex,
+                            "id" : Identity,
+                            "date":Date, 
+                            "median_time_cry":MedianResponseTimeCry,
+                            "median_time_USV": MedianResponseTimeUSV,
+                            "max_speed_cry": SpeedCryMax,
+                            "max_speed_USV": SpeedUSVMax,
+                            "min_dist_cry":MinDistSpeakerCry,
+                            "min_dist_USV":MinDistSpeakerWhis,
+                            "median_dist_cry":MedianDistSpeakerCry,
+                            "median_dist_USV":MedianDistSpeakerWhis,
+                            "distance_to_speaker": DistanceMouseSpeaker,
+                            "speed": Speed,
+                            "nan_tracking": NaNTracking, 
+                            "time_vector": TimeVector,
+                            "all_cry_bool": AllCrybool,
+                            "all_USV_bool": AllUSVbool,
+                            "index_onset_cry":CBoolFlipsup,
+                            "index_onset_USV":UBoolFlipsup,
+                            "end_experiment": EndOfExperiment
 
         })
 
