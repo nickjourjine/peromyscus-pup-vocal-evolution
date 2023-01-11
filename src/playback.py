@@ -267,3 +267,52 @@ def get_data(path_to_data, save, save_dir):
     print('done.')
         
     return playback_df
+def get_heatmaps(playback_df, feature):
+    """
+    Get matrices of dam feature (eg distance to speaker) where each row is a trial and each column is a time point.
+    
+    Arguments:
+        playback_df (dataframe): output of get_data
+        feature (str): the feature of interest - must be in the columns of playback df
+        
+    Returns:
+        CryMatrix (numpy array): matrix for cry responses
+        USVMatrix (numpy array): matrix for USV responses
+    
+    """
+    
+    # hard code information that is the same for all playback trials
+    start=0
+    TotalTime=3900
+    PreTime=300
+    iterations=25
+    
+    #initialize matrices
+    CryMatrix=np.zeros((iterations,TotalTime))
+    USVMatrix=np.zeros((24,TotalTime))
+    
+    #get CryMatrix
+    counter=0
+    for i in DataframePlayback["id"]:
+        iteraFrames=DataframePlayback.loc[DataframePlayback["id"]==i, "index_onset_cry"].to_numpy()[0]
+        EndOfExp=DataframePlayback.loc[DataframePlayback["id"]==i, "end_experiment"].item()
+        iteraFrames2=iteraFrames[0][np.where(iteraFrames[0]<EndOfExp)[0]]
+
+        for ii in iteraFrames2:
+            timevector=np.arange(-10,120,1/30)
+            CryMatrix[counter,:]=np.reshape(DataframePlayback.loc[DataframePlayback["id"]==i, "distance_to_speaker"].to_numpy()[0][ii-300:ii+3600], TotalTime)
+            counter=counter+1
+
+    #get USVMatrix
+    counter=0
+    for i in DataframePlayback["id"]:
+        iteraFrames=DataframePlayback.loc[DataframePlayback["id"]==i, "index_onset_USV"].to_numpy()[0]
+        EndOfExp=DataframePlayback.loc[DataframePlayback["id"]==i, "end_experiment"].item()
+        iteraFrames2=iteraFrames[0][np.where(iteraFrames[0]<EndOfExp)[0]]
+
+        for ii in iteraFrames2:
+            timevector=np.arange(-10,120,1/30)
+            USVMatrix[counter,:]=np.reshape(DataframePlayback.loc[DataframePlayback["id"]==i, "distance_to_speaker"].to_numpy()[0][ii-300:ii+3600], TotalTime)
+            counter=counter+1
+            
+    return CryMatrix, USVMatrix 
