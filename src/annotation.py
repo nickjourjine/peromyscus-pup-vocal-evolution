@@ -344,10 +344,7 @@ def annotations_from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_s
 	#make sure the index isn't going to fuck you up
 	ds_df = downsampled_frame.reset_index(drop=True)
 	
-	#check if there are completed source files for this species, label, and iteration and if so pick up from where you left off
-	inprogress_dir = '/n/hoekstra_lab_tier1/Users/njourjine/manuscript/models/das/annotations_from_umap/'+sampling_params['species']+'/annotations/in_progress/'+'hdbscanlabel'+str(sampling_params['hdbscan_label'])+'/'+str(sampling_params['sampling_iteration'])+'/'
-	
-    
+	#check if there are completed source files for this species, label, and iteration and if so pick up from where you left off  
 	source_file_save_name='completed_source_files.npy' #this file keeps track of paths to wav files for each vocalization that have been annotated
 	human_save_name='completed_human_labels.npy' #this file keeps track of the labels those wav files were given
 	
@@ -418,7 +415,7 @@ def annotations_from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_s
 
 			continue 
 	
-		elif val == '':
+		elif val == 'w':
 			human_labels.append('whistle')
 			print('ok - whistle')
 			done_source_files.append(spec_name)
