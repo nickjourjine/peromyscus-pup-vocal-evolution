@@ -64,7 +64,7 @@ def get_data(path_to_data, save, save_dir):
     Aggregate all playback data into a single dataframe
     
     Arguments:
-        path_to_data (list): the directory containing the data with one subdirectort per dam. Same as Path_Files in Analyze Playback.ipynb
+        path_to_data (list): the directory containing the data with one subdirectort per dam. Same as path_to_data in Analyze Playback.ipynb
         save (bool): whether or not to save the dataframe as a csv
         save_dir(str): path to the directory to save the dataframe as a csv if save is true
         
@@ -88,12 +88,12 @@ def get_data(path_to_data, save, save_dir):
         Date=Example[11:]
 
         #Grab from Folder the files for Centroid and TTL
-        ExampleSessionCentroid=  [f for f in os.listdir(Path_Files+Example) if f.startswith('centroid')] 
-        ExampleSessionTTL= [f for f in os.listdir(Path_Files+Example) if f.startswith('Playback_TTL')] 
+        ExampleSessionCentroid=  [f for f in os.listdir(path_to_data+Example) if f.startswith('centroid')] 
+        ExampleSessionTTL= [f for f in os.listdir(path_to_data+Example) if f.startswith('Playback_TTL')] 
 
         #Load Tracking(centroid) and TTL
-        tracking=np.genfromtxt([Path_Files+Example+ '/'  +ExampleSessionCentroid[0]][0], delimiter=',')
-        TTL=np.genfromtxt([Path_Files+Example+ '/' +ExampleSessionTTL[0]][0], delimiter=',')
+        tracking=np.genfromtxt([path_to_data+Example+ '/'  +ExampleSessionCentroid[0]][0], delimiter=',')
+        TTL=np.genfromtxt([path_to_data+Example+ '/' +ExampleSessionTTL[0]][0], delimiter=',')
 
         #Rescaling from pixels to cm
         Scale=8.8
