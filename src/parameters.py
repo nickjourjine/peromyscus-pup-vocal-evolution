@@ -111,7 +111,7 @@ def load_parameters(save_dir, save_name):
 	print('loaded parameters from:\n\t', save_path)
 	return params_dict
 
-def combine_dataframes(source_dir, save_dir, save_name, file_format, include_string, exclude_string, paths_list=None):
+def combine_dataframes(source_dir, save_dir, save_name, file_format, include_string, paths_list=None):
 
 	"""
 	Combine multiple csvs from a single directory (default) or list of paths into one. Useful for combining across species
@@ -125,7 +125,6 @@ def combine_dataframes(source_dir, save_dir, save_name, file_format, include_str
         save_name (string): name of the combined csv to be saved
         file_format (string): '.csv' or '.feather'
         include_sting (string): only combine files with this string in their name
-        exclude_string (string): ignore files with this in their name
 
 	Returns
 	-------
@@ -135,7 +134,7 @@ def combine_dataframes(source_dir, save_dir, save_name, file_format, include_str
 	assert file_format in ['.csv', '.wav', '.feather']
     
 	if paths_list == None and source_dir != None:
-		sources = [source_dir+i for i in os.listdir(source_dir) if i.endswith(file_format) and exclude_string not in i and not i.startswith('.') and include_string in i]
+		sources = [source_dir+i for i in os.listdir(source_dir) if i.endswith(file_format) and not i.startswith('.') and include_string in i]
 		combined = []
 		
 	elif paths_list != None and source_dir == None:
