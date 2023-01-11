@@ -343,56 +343,56 @@ def from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns,
 	
     #check inputs
     assert spec_type in ['from_embedding', 'from_wav']
-    
-	#reset index
-	ds_df = downsampled_frame.reset_index(drop=True)
-	
-	#check if there are completed source files for this species, label, and iteration and if so pick up from where you left off  
-	source_file_save_name='completed_source_files.npy' #this file keeps track of paths to wav files for each vocalization that have been annotated
-	human_save_name='completed_human_labels.npy' #this file keeps track of the labels those wav files were given
-	
-	source_file_save_path = os.path.join(in_progress_dir,source_file_save_name)
-	human_save_path = os.path.join(in_progress_dir, human_save_name)
-	
-	if len(os.listdir(in_progress_dir)) != 0:
-		
-		print('loading saved annotations...')
-		done_source_files = list(np.load(source_file_save_path))
-		human_labels = list(np.load(human_save_path))
-		print('you already annotated', len(done_source_files), 'vocalizations from this species, label, and iteration...')
-		
-	else:
-		print('starting from scratch - no previously annotated vocalizations from this sampling params dictionary')
-		done_source_files = []
-		human_labels = []
 
-	#get the source files to be processed and begin
-	not_done_source_files = [i for i in ds_df['source_file'] if i not in done_source_files]
+    #reset index
+    ds_df = downsampled_frame.reset_index(drop=True)
 
-	for spec_name in not_done_source_files:
+    #check if there are completed source files for this species, label, and iteration and if so pick up from where you left off  
+    source_file_save_name='completed_source_files.npy' #this file keeps track of paths to wav files for each vocalization that have been annotated
+    human_save_name='completed_human_labels.npy' #this file keeps track of the labels those wav files were given
 
-		#save so you can recover if interrupted
-		print('saving progress...')
-		np.save(file=source_file_save_path, arr=np.array(done_source_files))
-		np.save(file=human_save_path, arr=np.array(human_labels))
+    source_file_save_path = os.path.join(in_progress_dir,source_file_save_name)
+    human_save_path = os.path.join(in_progress_dir, human_save_name)
 
-		#progress input
-		print('vocalization', len(done_source_files),  'of', len(ds_df), '...')
+    if len(os.listdir(in_progress_dir)) != 0:
 
-		#collect meta-data
+        print('loading saved annotations...')
+        done_source_files = list(np.load(source_file_save_path))
+        human_labels = list(np.load(human_save_path))
+        print('you already annotated', len(done_source_files), 'vocalizations from this species, label, and iteration...')
 
-		#display the source file and make the spectrogram
-		print(spec_name)
-		if spec_type == 'from_embedding':
-			to_plot = downsampled_frame.loc[downsampled_frame['source_file']==spec_name]
-			img = to_plot.drop(columns=non_spec_columns)
-			img = np.array(img).reshape((num_freq_bins, num_time_bins))
-			plt.imshow(img, origin = 'lower', extent = (num_freq_bins, 0, num_time_bins, 0 ))
-			plt.show()
-			
-		elif spec_type == 'from_wav':
-			fs, wav = wavfile.read(clips_dir+spec_name)
-			t,f,spec = get_spectrogram(data = wav, 
+    else:
+        print('starting from scratch - no previously annotated vocalizations from this sampling params dictionary')
+        done_source_files = []
+        human_labels = []
+
+    #get the source files to be processed and begin
+    not_done_source_files = [i for i in ds_df['source_file'] if i not in done_source_files]
+
+    for spec_name in not_done_source_files:
+
+        #save so you can recover if interrupted
+        print('saving progress...')
+        np.save(file=source_file_save_path, arr=np.array(done_source_files))
+        np.save(file=human_save_path, arr=np.array(human_labels))
+
+        #progress input
+        print('vocalization', len(done_source_files),  'of', len(ds_df), '...')
+
+        #collect meta-data
+
+        #display the source file and make the spectrogram
+        print(spec_name)
+        if spec_type == 'from_embedding':
+            to_plot = downsampled_frame.loc[downsampled_frame['source_file']==spec_name]
+            img = to_plot.drop(columns=non_spec_columns)
+            img = np.array(img).reshape((num_freq_bins, num_time_bins))
+            plt.imshow(img, origin = 'lower', extent = (num_freq_bins, 0, num_time_bins, 0 ))
+            plt.show()
+
+        elif spec_type == 'from_wav':
+            fs, wav = wavfile.read(clips_dir+spec_name)
+            t,f,spec = get_spectrogram(data = wav, 
                           fs=spec_params['fs'], 
                           nperseg=spec_params['nperseg'], 
                           noverlap=spec_params['noverlap'], 
@@ -404,93 +404,93 @@ def from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns,
                           max_dur=spec_params['max_dur'], 
                           spec_min_val=spec_params['spec_min_val'], 
                           spec_max_val=spec_params['spec_max_val'])
-			plt.figure(figsize=[5,5])
-			plt.imshow(spec, origin='lower')
-			plt.show()
+            plt.figure(figsize=[5,5])
+            plt.imshow(spec, origin='lower')
+            plt.show()
 
-		#get input 
-		val = input("what does this look like?"+"\n"+"type c for 'cry' | w for 'whistle' | s for 'scratch' | . for none of the above |"+"\n"+ "type u for undo | 'exit' to save and return a df of what you've annotated")
+        #get input 
+        val = input("what does this look like?"+"\n"+"type c for 'cry' | w for 'whistle' | s for 'scratch' | . for none of the above |"+"\n"+ "type u for undo | 'exit' to save and return a df of what you've annotated")
 
-		if val == 'c':
-			human_labels.append('cry')
-			print('ok - cry')
-			done_source_files.append(spec_name)
+        if val == 'c':
+            human_labels.append('cry')
+            print('ok - cry')
+            done_source_files.append(spec_name)
 
-			continue 
-	
-		elif val == 'w':
-			human_labels.append('whistle')
-			print('ok - whistle')
-			done_source_files.append(spec_name)
+            continue 
 
-			continue
-	
-		elif val == 's':
-			human_labels.append('scratch')
-			print('ok - scratch')
-			done_source_files.append(spec_name)
+        elif val == 'w':
+            human_labels.append('whistle')
+            print('ok - whistle')
+            done_source_files.append(spec_name)
 
-			continue
-			
-		elif val == '.':
-			human_labels.append('none')
-			print('ok - none')
-			done_source_files.append(spec_name)
+            continue
 
-			continue
-				
-		elif val == 'u':
-			count_val = input("how many annotations back to you you want to go?")
-			
-			if count_val in [str(i) for i in range(1,100,1)]:
-				count_val=int(count_val)
-				done_source_files = done_source_files[:-count_val]
-				human_labels = human_labels[:-count_val]
-			
-				np.save(file=source_file_save_path, arr=np.array(done_source_files))
-				np.save(file=human_save_path, arr=np.array(human_labels))
-				print('Removed the last', str(count_val), 'annotations and saved the list of completed source files. Start over to re-label')
-				return
-			else:
-				print('Type a number between 1 and 100. Start over to try again.')
-				return
-	
-		elif val == 'exit':
-			print("exiting...you've annotated", len(done_source_files), "wav clips.")
-			print('returning the labeled vocalizations to you...')
-			#compile the data you just generated
-			temp = pd.DataFrame()
-			temp['source_file'] = done_source_files
-			temp['human_label'] = human_labels
+        elif val == 's':
+            human_labels.append('scratch')
+            print('ok - scratch')
+            done_source_files.append(spec_name)
 
-			#merge on 'source_file' with the spectrograms dataframe
-			labeled_df = ds_df.merge(temp, on=['source_file'])
-			labeled_df = labeled_df.rename(columns={'label':'hdbscan_label'})
-			
-			#save
-			labeled_df.to_feather(df_save_dir+df_save_name)
-	
-			print('done.')
-			return labeled_df
-		
-		else:
-			print("You pressed a key that doesn't make sense - exiting. Just re-run the cell.")
-			return
-			
-	#compile the data you just generated
-	temp = pd.DataFrame()
-	temp['source_file'] = done_source_files
-	temp['human_label'] = human_labels
+            continue
 
-	#merge on 'source_file' with the spectrograms dataframe
-	labeled_df = ds_df.merge(temp, on=['source_file'])
-	labeled_df = labeled_df.rename(columns={'label':'hdbscan_label'})
-	
-	#save
-	print("you've annotated all the vocalizations in the data frame...saving")
-	labeled_df.to_feather(df_save_dir+df_save_name)
-	print('done.')
-	return labeled_df
+        elif val == '.':
+            human_labels.append('none')
+            print('ok - none')
+            done_source_files.append(spec_name)
+
+            continue
+
+        elif val == 'u':
+            count_val = input("how many annotations back to you you want to go?")
+
+            if count_val in [str(i) for i in range(1,100,1)]:
+                count_val=int(count_val)
+                done_source_files = done_source_files[:-count_val]
+                human_labels = human_labels[:-count_val]
+
+                np.save(file=source_file_save_path, arr=np.array(done_source_files))
+                np.save(file=human_save_path, arr=np.array(human_labels))
+                print('Removed the last', str(count_val), 'annotations and saved the list of completed source files. Start over to re-label')
+                return
+            else:
+                print('Type a number between 1 and 100. Start over to try again.')
+                return
+
+        elif val == 'exit':
+            print("exiting...you've annotated", len(done_source_files), "wav clips.")
+            print('returning the labeled vocalizations to you...')
+            #compile the data you just generated
+            temp = pd.DataFrame()
+            temp['source_file'] = done_source_files
+            temp['human_label'] = human_labels
+
+            #merge on 'source_file' with the spectrograms dataframe
+            labeled_df = ds_df.merge(temp, on=['source_file'])
+            labeled_df = labeled_df.rename(columns={'label':'hdbscan_label'})
+
+            #save
+            labeled_df.to_feather(df_save_dir+df_save_name)
+
+            print('done.')
+            return labeled_df
+
+        else:
+            print("You pressed a key that doesn't make sense - exiting. Just re-run the cell.")
+            return
+
+    #compile the data you just generated
+    temp = pd.DataFrame()
+    temp['source_file'] = done_source_files
+    temp['human_label'] = human_labels
+
+    #merge on 'source_file' with the spectrograms dataframe
+    labeled_df = ds_df.merge(temp, on=['source_file'])
+    labeled_df = labeled_df.rename(columns={'label':'hdbscan_label'})
+
+    #save
+    print("you've annotated all the vocalizations in the data frame...saving")
+    labeled_df.to_feather(df_save_dir+df_save_name)
+    print('done.')
+    return labeled_df
 	
 def from_background(species, pup, bg_labeling_params, bg_clips_dir, df_save_dir, df_save_name, inprogress_dir):
 	"""
