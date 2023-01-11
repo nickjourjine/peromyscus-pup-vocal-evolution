@@ -315,7 +315,7 @@ def sample_vocs(frame, num_to_sample, label_to_sample, random_state):
 	
 	return downsampled_df
 
-def annotations_from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns, sampling_params, clips_dir, in_progress_dir, spec_type, df_save_dir, df_save_name, spec_params):
+def from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns, sampling_params, clips_dir, in_progress_dir, spec_type, df_save_dir, df_save_name, spec_params):
 	"""
 	1. Take a data frame where each row is a vocalization, and columns spectrogram pixel values and a UMAP cluster label (eg from HDBSCAN)
 	2. Display each spectrogram one at a time and ask for user input to label it
@@ -489,7 +489,7 @@ def annotations_from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_s
 	print('done.')
 	return labeled_df
 	
-def annotations_from_background(species, pup, bg_labeling_params, bg_clips_dir, df_save_dir, df_save_name, inprogress_dir):
+def from_background(species, pup, bg_labeling_params, bg_clips_dir, df_save_dir, df_save_name, inprogress_dir):
 	"""
 	1. Display clips of background (ie nonvocal) sounds for each pup in species
 	2. User labels the ones that don't contain vocalizations
@@ -1363,7 +1363,7 @@ def concat_annotated_random(voc_clips_dir,random_bg_clips_dir, save_dir, save_na
 	return annotation
 
 	
-def make_annotations_directories(save_dir, iteration):
+def make_directories(save_dir, iteration):
 	"""
 	Prepare the directories needed for annotation for a single species
 
