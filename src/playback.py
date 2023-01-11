@@ -78,7 +78,12 @@ def get_data(path_to_data, save, save_dir):
 
     #initialize list to collect data
     DataframePlayback=[]
+    
+    #print some useful info
+    print('Aggregating data from dams (species_ID_yyyy_m_dd):\n')
+    for index, dam in enumerate(SessionsToRun): print('\t', dam)
 
+    #get the data
     for Example in SessionsToRun:
 
         #get metadata
@@ -104,7 +109,6 @@ def get_data(path_to_data, save, save_dir):
             minimum=np.min([np.size(tracking,0),np.size(TTL)])
             TTL=TTL[0:minimum]
             tracking=tracking[0:minimum,:]
-            print(minimum)
 
         #Threshold TTL
         TTL[:]=TTL>1
@@ -216,7 +220,6 @@ def get_data(path_to_data, save, save_dir):
 
         #Define End of Experiment
         ExtraFrames=300
-        print(CBoolFlipsdn[0][4])
         if Identity=="31922":
             EndOfExperiment=np.max([ CBoolFlipsdn[0][4], UBoolFlipsdn[0][3]]) +ExtraFrames
         else:
