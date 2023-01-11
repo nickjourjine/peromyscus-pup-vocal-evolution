@@ -315,7 +315,7 @@ def sample_vocs(frame, num_to_sample, label_to_sample, random_state):
 	
 	return downsampled_df
 
-def annotations_from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns, sampling_params, clips_dir, spec_type, df_save_dir, df_save_name, spec_params):
+def annotations_from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns, sampling_params, clips_dir, in_progress_dir, spec_type, df_save_dir, df_save_name, spec_params):
 	"""
 	1. Take a data frame where each row is a vocalization, and columns spectrogram pixel values and a UMAP cluster label (eg from HDBSCAN)
 	2. Display each spectrogram one at a time and ask for user input to label it
@@ -330,6 +330,7 @@ def annotations_from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_s
         non_spec_columns (list): the column names that do not correspond to spectrogram pixels (so they can be dropped before making the spectrogram)
         sampling_params_path (str): path to dictionary with the sampling parameters including keys: species, hdbscan label, random seed, and iteration 
         clips_dir (str): path to the directory containing all of the wav clips for each species
+        in_progress_dir (str): path to the directroy to keep track of whcih vocalizations of each type you have annotated for a given iteration
         spec_type (str): if 'from_embedding', show the exact spectrogram that went into the embedding. if 'from_wav' make a new spectrogram.
         df_save_dir (str): path to a directory where hand annotations will be saved as .feather
         df_save_name (str): name of the .feather file to save including file extension
@@ -344,19 +345,20 @@ def annotations_from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_s
 	ds_df = downsampled_frame.reset_index(drop=True)
 	
 	#check if there are completed source files for this species, label, and iteration and if so pick up from where you left off
-	inprogress_dir = '/n/hoekstra_lab_tier1/Users/njourjine/manuscript/models/das/annotations_from_umap/'+sampling_params['species']+'/annotations/in_progress/'+'hdbscanlabel'+str(sampling_params['hdbscan_label'])+'/'+'iteration'+str(sampling_params['sampling_iteration'])+'/'
+	inprogress_dir = '/n/hoekstra_lab_tier1/Users/njourjine/manuscript/models/das/annotations_from_umap/'+sampling_params['species']+'/annotations/in_progress/'+'hdbscanlabel'+str(sampling_params['hdbscan_label'])+'/'+str(sampling_params['sampling_iteration'])+'/'
 	
-	source_file_save_name='completed_source_files'
-	human_save_name='completed_human_labels'
+    
+	source_file_save_name='completed_source_files.npy' #this file keeps track of paths to wav files for each vocalization that have been annotated
+	human_save_name='completed_human_labels.npy' #this file keeps track of the labels those wav files were given
 	
-	source_file_save_path = inprogress_dir+source_file_save_name
-	human_save_path = inprogress_dir+human_save_name
+	source_file_save_path = os.path.join(inprogress_dir,source_file_save_name)
+	human_save_path = os.path.join(inprogress_dir, human_save_name)
 	
 	if len(os.listdir(inprogress_dir)) != 0:
 		
 		print('loading saved annotations...')
-		done_source_files = list(np.load(source_file_save_path+'.npy'))
-		human_labels = list(np.load(human_save_path+'.npy'))
+		done_source_files = list(np.load(source_file_save_path))
+		human_labels = list(np.load(human_save_path))
 		print('you already annotated', len(done_source_files), 'vocalizations from this species, label, and iteration...')
 		
 	else:
@@ -1379,9 +1381,7 @@ def make_annotations_directories(save_dir, iteration):
 
 	"""
 
-
 	#get an embedding with hdbscan labels
-
 	if 'annotations' not in os.listdir(save_dir):
 		os.mkdir(save_dir+'annotations')
 		print('made annotations directory at', save_dir+'annotations\n')
@@ -1400,7 +1400,6 @@ def make_annotations_directories(save_dir, iteration):
 	else:
 		print('00_params directory already exists at', save_dir+'annotations/'+'in_progress\n')
 
-	
 	if 'hdbscanlabel0' not in os.listdir(save_dir+'annotations/in_progress'):
 		os.mkdir(save_dir+'annotations/'+'in_progress/hdbscanlabel0')
 		print('made 00_params directory at', save_dir+'annotations/'+'in_progress/hdbscanlabel0\n')
