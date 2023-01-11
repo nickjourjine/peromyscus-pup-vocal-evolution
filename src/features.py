@@ -1,10 +1,13 @@
 #this file contains functions related to calculating, aggregating, and organizing features of 
 #vocalizations and pups who made them
 
+#file system
 import os
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+
+#data
 from librosa import rms
 from scipy.io import wavfile
 from scipy.signal import stft
