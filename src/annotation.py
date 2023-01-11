@@ -341,7 +341,10 @@ def from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns,
 
 	"""
 	
-	#make sure the index isn't going to fuck you up
+    #check inputs
+    assert spec_type in ['from_embedding', 'from_wav']
+    
+	#reset index
 	ds_df = downsampled_frame.reset_index(drop=True)
 	
 	#check if there are completed source files for this species, label, and iteration and if so pick up from where you left off  
