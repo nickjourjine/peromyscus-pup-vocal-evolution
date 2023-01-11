@@ -315,7 +315,7 @@ def sample_vocs(frame, num_to_sample, label_to_sample, random_state):
 	
 	return downsampled_df
 
-def from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns, sampling_params, clips_dir, in_progress_dir, spec_type='from_wav', df_save_dir, df_save_name, spec_params):
+def from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns, sampling_params, clips_dir, in_progress_dir, df_save_dir, df_save_name, spec_params, spec_type='from_wav'):
     """
     1. Take a data frame where each row is a vocalization, and columns spectrogram pixel values and a UMAP cluster label (eg from HDBSCAN)
     2. Display each spectrogram one at a time and ask for user input to label it
@@ -331,10 +331,10 @@ def from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns,
         sampling_params_path (str): path to dictionary with the sampling parameters including keys: species, hdbscan label, random seed, and iteration 
         clips_dir (str): path to the directory containing all of the wav clips for each species
         in_progress_dir (str): path to the directroy to keep track of whcih vocalizations of each type you have annotated for a given iteration
-        spec_type (str): If 'from_embedding', show the spectrogram that went into the embedding. If 'from_wav' (default) make a new spectrogram with spec_params - this is the better option for annotation.
         df_save_dir (str): path to a directory where hand annotations will be saved as .feather
         df_save_name (str): name of the .feather file to save including file extension
         spec_params (dict): a dictionary of spectrogram parameters used to make spectrograms if spec_type is 'from_wav'
+        spec_type (str): If 'from_embedding', show the spectrogram that went into the embedding. If 'from_wav' (default) make a new spectrogram with                      spec_params - this is the better option for annotation.
 
     Returns:
        labeled_df (df): a dataframe containing spectrogram images, umap_coordinates, source_files, hdbscan labels, and user labels for each annotated voc
