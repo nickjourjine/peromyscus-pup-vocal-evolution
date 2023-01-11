@@ -283,7 +283,7 @@ def get_heatmaps(playback_df, feature):
     
     #check inputs
     assert isinstance(playback_df, pd.core.frame.DataFrame), "playback_df must be a pandas dataframe"
-    assert feature in playback_df.columns(), "feature must be one of the column labels of playback_df"
+    assert feature in playback_df.columns, "feature must be one of the column labels of playback_df"
     
     # hard code information that is the same for all playback trials
     start=0
