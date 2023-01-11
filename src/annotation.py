@@ -331,7 +331,7 @@ def from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns,
         sampling_params_path (str): path to dictionary with the sampling parameters including keys: species, hdbscan label, random seed, and iteration 
         clips_dir (str): path to the directory containing all of the wav clips for each species
         in_progress_dir (str): path to the directroy to keep track of whcih vocalizations of each type you have annotated for a given iteration
-        spec_type (str): if 'from_embedding', show the exact spectrogram that went into the embedding. if 'from_wav' make a new spectrogram.
+        spec_type (str): If 'from_embedding', show the spectrogram that went into the embedding. If 'from_wav' make a new spectrogram with spec_params.
         df_save_dir (str): path to a directory where hand annotations will be saved as .feather
         df_save_name (str): name of the .feather file to save including file extension
         spec_params (dict): a dictionary of spectrogram parameters used to make spectrograms if spec_type is 'from_wav'
