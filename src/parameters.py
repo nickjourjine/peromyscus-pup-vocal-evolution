@@ -7,6 +7,7 @@ import os
 
 #data
 import json
+import pandas as pd
 from datetime import date, datetime
 
 def get_date_time():
