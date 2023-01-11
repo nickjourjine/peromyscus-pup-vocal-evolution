@@ -316,13 +316,13 @@ def sample_vocs(frame, num_to_sample, label_to_sample, random_state):
 	return downsampled_df
 
 def from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns, sampling_params, clips_dir, in_progress_dir, spec_type, df_save_dir, df_save_name, spec_params):
-	"""
-	1. Take a data frame where each row is a vocalization, and columns spectrogram pixel values and a UMAP cluster label (eg from HDBSCAN)
-	2. Display each spectrogram one at a time and ask for user input to label it
-	3. Check whether the pup each vocalization came from is in the annotation set
-	4. Save the dataframe with a column for user label and a column for whether or not this pup is in the annotation set
+    """
+    1. Take a data frame where each row is a vocalization, and columns spectrogram pixel values and a UMAP cluster label (eg from HDBSCAN)
+    2. Display each spectrogram one at a time and ask for user input to label it
+    3. Check whether the pup each vocalization came from is in the annotation set
+    4. Save the dataframe with a column for user label and a column for whether or not this pup is in the annotation set
 
-	Arguments:
+    Arguments:
         downsampled_frame (data frame): data frame containing the spectrogram images, umap_coordinates, source_files, and hdbscan labels for annotation.
         random_state (int): random seed for reproducible sampling
         num_freq_bins (int): the number of frequency bins in the spectrogram to be displayed
@@ -336,11 +336,11 @@ def from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_spec_columns,
         df_save_name (str): name of the .feather file to save including file extension
         spec_params (dict): a dictionary of spectrogram parameters used to make spectrograms if spec_type is 'from_wav'
 
-	Returns:
-	   labeled_df (df): a dataframe containing spectrogram images, umap_coordinates, source_files, hdbscan labels, and user labels for each annotated voc
+    Returns:
+       labeled_df (df): a dataframe containing spectrogram images, umap_coordinates, source_files, hdbscan labels, and user labels for each annotated voc
 
-	"""
-	
+    """
+
     #check inputs
     assert spec_type in ['from_embedding', 'from_wav']
 
