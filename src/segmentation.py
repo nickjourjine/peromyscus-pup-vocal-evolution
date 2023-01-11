@@ -15,7 +15,6 @@ import numpy as np
 import pandas as pd
 from scipy.io import wavfile
 from scipy.signal import stft
-from librosa.feature import rms
 from scipy.interpolate import interp2d
 from scipy.ndimage.filters import gaussian_filter
 
