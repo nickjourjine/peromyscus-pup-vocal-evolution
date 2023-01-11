@@ -1,6 +1,8 @@
 #this file contains functions for writing and reading parameters and dealing with directories and 
 #dataframes for keeping track of different parameter choices for a given analysis
 
+from datetime import date, datetime
+
 def get_date_time():
     """
     Uses datetime to return a string with the format CurrentDate_CurrentTime,  e.g. 20220920_120000
@@ -14,7 +16,7 @@ def get_date_time():
 
     """
     
-    from datetime import date, datetime
+    
     
     #get the date
     current_date = str(date.today())
