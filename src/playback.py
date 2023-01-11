@@ -165,21 +165,21 @@ def get_data(path_to_data, save, save_dir):
 
         # Smoothing X and Y with a gaussian filter
         sigma1 = 5
-        Filter=beh.gaussian_filter_1d(size=60,sigma=sigma1)
+        Filter=gaussian_filter_1d(size=60,sigma=sigma1)
         tracking[:,0]=np.convolve(tracking[:,0], Filter, 'same')
         tracking[:,1]=np.convolve(tracking[:,1], Filter, 'same')
 
         #Gaussian filtering the speed and Calculating speed
         TimeVector=np.arange(0,0.0333*np.size(TTL,0),0.0333)
-        Speedpre=beh.calc_speed(tracking, 30)
+        Speedpre=calc_speed(tracking, 30)
         Speedpre=np.append(Speedpre,Speedpre[-1])
         sigma1 = 10
-        Filter=beh.gaussian_filter_1d(size=60,sigma=5)
+        Filter=gaussian_filter_1d(size=60,sigma=5)
         Speed=np.convolve(Speedpre, Filter, 'same')
 
         #Calculate Distances to Nest and Speaker
-        DistanceMouseSpeaker=beh.calc_distance(tracking[:,0], tracking[:,1], 5, 22.5)
-        DistanceMouseNest=beh.calc_distance(tracking[:,0], tracking[:,1], 31, 6)
+        DistanceMouseSpeaker=calc_distance(tracking[:,0], tracking[:,1], 5, 22.5)
+        DistanceMouseNest=calc_distance(tracking[:,0], tracking[:,1], 31, 6)
 
         #Median of speeds During Cry and USV
         SpeedCryMedian=np.median(Speed[AllCrybool])
