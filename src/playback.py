@@ -77,7 +77,7 @@ def get_data(path_to_data, save, save_dir):
     SessionsToRun = [f for f in os.listdir(path_to_data) if f.startswith('BW')]
 
     #initialize list to collect data
-    DataframePlayback=[]
+    playback_df=[]
     
     #print some useful info
     print('Aggregating data from dams (species_ID_yyyy_m_dd):\n')
@@ -234,7 +234,7 @@ def get_data(path_to_data, save, save_dir):
         MedianResponseTimeUSV=np.median(TimeUSVs)
 
         #Aggregate the data for this iteration of the loop
-        DataframePlayback.append({ "species" : Species ,
+        playback_df.append({ "species" : Species ,
                                    "sex" : Sex ,
                                   "id" : Identity,
                                   "date":Date, 
@@ -258,7 +258,7 @@ def get_data(path_to_data, save, save_dir):
         })
 
     #make the dataframe for all dams
-    playback_df = pd.DataFrame(DataframePlayback)  
+    playback_df = pd.DataFrame(playback_df)  
 
     #save dataframe
     if save:
@@ -297,26 +297,26 @@ def get_heatmaps(playback_df, feature):
     
     #get CryMatrix
     counter=0
-    for i in DataframePlayback["id"]:
-        iteraFrames=DataframePlayback.loc[DataframePlayback["id"]==i, "index_onset_cry"].to_numpy()[0]
-        EndOfExp=DataframePlayback.loc[DataframePlayback["id"]==i, "end_experiment"].item()
+    for i in playback_df["id"]:
+        iteraFrames=playback_df.loc[playback_df["id"]==i, "index_onset_cry"].to_numpy()[0]
+        EndOfExp=playback_df.loc[playback_df["id"]==i, "end_experiment"].item()
         iteraFrames2=iteraFrames[0][np.where(iteraFrames[0]<EndOfExp)[0]]
 
         for ii in iteraFrames2:
             timevector=np.arange(-10,120,1/30)
-            CryMatrix[counter,:]=np.reshape(DataframePlayback.loc[DataframePlayback["id"]==i, "distance_to_speaker"].to_numpy()[0][ii-300:ii+3600], TotalTime)
+            CryMatrix[counter,:]=np.reshape(playback_df.loc[playback_df["id"]==i, "distance_to_speaker"].to_numpy()[0][ii-300:ii+3600], TotalTime)
             counter=counter+1
 
     #get USVMatrix
     counter=0
-    for i in DataframePlayback["id"]:
-        iteraFrames=DataframePlayback.loc[DataframePlayback["id"]==i, "index_onset_USV"].to_numpy()[0]
-        EndOfExp=DataframePlayback.loc[DataframePlayback["id"]==i, "end_experiment"].item()
+    for i in playback_df["id"]:
+        iteraFrames=playback_df.loc[playback_df["id"]==i, "index_onset_USV"].to_numpy()[0]
+        EndOfExp=playback_df.loc[playback_df["id"]==i, "end_experiment"].item()
         iteraFrames2=iteraFrames[0][np.where(iteraFrames[0]<EndOfExp)[0]]
 
         for ii in iteraFrames2:
             timevector=np.arange(-10,120,1/30)
-            USVMatrix[counter,:]=np.reshape(DataframePlayback.loc[DataframePlayback["id"]==i, "distance_to_speaker"].to_numpy()[0][ii-300:ii+3600], TotalTime)
+            USVMatrix[counter,:]=np.reshape(playback_df.loc[playback_df["id"]==i, "distance_to_speaker"].to_numpy()[0][ii-300:ii+3600], TotalTime)
             counter=counter+1
             
     return CryMatrix, USVMatrix 
