@@ -263,5 +263,7 @@ def get_data(path_to_data, save, save_dir):
     #save dataframe
     if save:
         playback_df.to_csv(os.path.join(save_dir, save_name), index=False)
+    
+    print('done.')
         
     return playback_df
