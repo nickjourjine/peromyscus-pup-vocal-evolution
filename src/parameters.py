@@ -132,7 +132,7 @@ def combine_dataframes(source_dir, save_dir, save_name, file_format, include_str
 	   all_files (dataframe): the combined dataframe
 
 	"""
-	assert file_format in ['.csv', '.wav']
+	assert file_format in ['.csv', '.wav', '.feather']
     
 	if paths_list == None and source_dir != None:
 		sources = [source_dir+i for i in os.listdir(source_dir) if i.endswith(file_format) and exclude_string not in i and not i.startswith('.') and include_string in i]
