@@ -1,21 +1,25 @@
 #this file contains functions for generating and visualizing spectrograms
 
-import glob
+#filesystem
 import os
+import glob
+from tqdm import tqdm
+
+#plotting
+import seaborn as sns 
 import matplotlib.pyplot as plt
-from scipy.io import wavfile
-from scipy.interpolate import interp2d
-from scipy.signal import stft
+
+#data
+import umap
+import time
+import random
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from PIL import Image
-import shutil	
-import seaborn as sns 
-import time
+from scipy.io import wavfile
+from scipy.signal import stft
+from scipy.interpolate import interp2d
 from sklearn.preprocessing import StandardScaler
-import umap
-from scipy.signal import butter, lfilter
+
 
 def get_spectrogram(data, fs, nperseg, noverlap, num_freq_bins, num_time_bins, min_freq, max_freq, fill_value, max_dur, spec_min_val, spec_max_val): 
     """
