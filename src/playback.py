@@ -247,7 +247,7 @@ def get_data(path_to_data, save, save_dir):
                             "median_dist_cry":MedianDistSpeakerCry,
                             "median_dist_USV":MedianDistSpeakerWhis,
                             "distance_to_speaker": DistanceMouseSpeaker,
-                            "speed": Speed,
+                            "Speed": Speed,
                             "nan_tracking": NaNTracking, 
                             "time_vector": TimeVector,
                             "all_cry_bool": AllCrybool,
@@ -270,11 +270,12 @@ def get_data(path_to_data, save, save_dir):
     return playback_df
 def get_heatmaps(playback_df, feature):
     """
-    Get matrices of dam feature (eg distance to speaker) where each row is a trial and each column is a time point.
+    Get matrices of dam distance to speaker or speed where each row is a trial and each column is a time point.
+    Useful for plotting heatmaps.
     
     Arguments:
         playback_df (dataframe): output of get_data
-        feature (str): the feature of interest - must be in the columns of playback df
+        feature (str): the feature of interest - must be either "distance_to_speaker" or "Speed"
         
     Returns:
         CryMatrix (numpy array): matrix for cry responses
@@ -284,7 +285,7 @@ def get_heatmaps(playback_df, feature):
     
     #check inputs
     assert isinstance(playback_df, pd.core.frame.DataFrame), "playback_df must be a pandas dataframe"
-    assert feature in playback_df.columns, "feature must be one of the column labels of playback_df"
+    assert feature in ["distance_to_speaker", "Speed"]
     
     # hard code information that is the same for all playback trials
     start=0
@@ -305,7 +306,7 @@ def get_heatmaps(playback_df, feature):
 
         for ii in iteraFrames2:
             timevector=np.arange(-10,120,1/30)
-            CryMatrix[counter,:]=np.reshape(playback_df.loc[playback_df["id"]==i, "distance_to_speaker"].to_numpy()[0][ii-300:ii+3600], TotalTime)
+            CryMatrix[counter,:]=np.reshape(playback_df.loc[playback_df["id"]==i, feature].to_numpy()[0][ii-300:ii+3600], TotalTime)
             counter=counter+1
 
     #get USVMatrix
@@ -317,7 +318,7 @@ def get_heatmaps(playback_df, feature):
 
         for ii in iteraFrames2:
             timevector=np.arange(-10,120,1/30)
-            USVMatrix[counter,:]=np.reshape(playback_df.loc[playback_df["id"]==i, "distance_to_speaker"].to_numpy()[0][ii-300:ii+3600], TotalTime)
+            USVMatrix[counter,:]=np.reshape(playback_df.loc[playback_df["id"]==i, feature].to_numpy()[0][ii-300:ii+3600], TotalTime)
             counter=counter+1
             
     return CryMatrix, USVMatrix 
