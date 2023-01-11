@@ -74,7 +74,7 @@ def get_data(path_to_data, save, save_dir):
     """
 
     #get dams whose data you will aggregate
-    SessionsToRun = [f for f in os.listdir(Path_Files) if f.startswith('BW')]
+    SessionsToRun = [f for f in os.listdir(path_to_data) if f.startswith('BW')]
 
     #initialize list to collect data
     DataframePlayback=[]
