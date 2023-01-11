@@ -348,10 +348,10 @@ def annotations_from_umap(downsampled_frame, num_freq_bins, num_time_bins, non_s
 	source_file_save_name='completed_source_files.npy' #this file keeps track of paths to wav files for each vocalization that have been annotated
 	human_save_name='completed_human_labels.npy' #this file keeps track of the labels those wav files were given
 	
-	source_file_save_path = os.path.join(inprogress_dir,source_file_save_name)
-	human_save_path = os.path.join(inprogress_dir, human_save_name)
+	source_file_save_path = os.path.join(in_progress_dir,source_file_save_name)
+	human_save_path = os.path.join(in_progress_dir, human_save_name)
 	
-	if len(os.listdir(inprogress_dir)) != 0:
+	if len(os.listdir(in_progress_dir)) != 0:
 		
 		print('loading saved annotations...')
 		done_source_files = list(np.load(source_file_save_path))
