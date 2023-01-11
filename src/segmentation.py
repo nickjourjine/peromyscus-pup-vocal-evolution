@@ -1,21 +1,25 @@
 # this file contains functions for segmenting vocalizations
 
-import glob
+#filesystem
 import os
-import json
+import glob
+from tqdm import tqdm
+
+#plotting
+import seaborn as sns 
 import matplotlib.pyplot as plt
-from scipy.io import wavfile
-from scipy.interpolate import interp2d
-from scipy.signal import stft
+
+#data
+import json
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from PIL import Image
-import shutil	
-import seaborn as sns 
-from scipy.ndimage.filters import gaussian_filter
+from scipy.io import wavfile
+from scipy.signal import stft
 from librosa.feature import rms
+from scipy.interpolate import interp2d
+from scipy.ndimage.filters import gaussian_filter
 
+#custom
 from src.spectrogramming import ava_get_spec
 from src.parameters import save_parameters, load_parameters
 
