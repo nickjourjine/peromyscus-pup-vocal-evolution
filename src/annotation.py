@@ -1,23 +1,24 @@
 #this file contains functions for generating annotations from spectrogram clips
 
-import glob
+#filesystem
 import os
-import matplotlib.pyplot as plt
-from scipy.io import wavfile
-from scipy.interpolate import interp2d
-from scipy.signal import stft
-import numpy as np
-import pandas as pd
+import glob
 from tqdm import tqdm
-from PIL import Image
-import shutil	
+
+#plotting
 import seaborn as sns 
-import time
-from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+
+#data
 import umap
 import json
 import random
+import numpy as np
+import pandas as pd
+from scipy.io import wavfile
+from scipy.signal import stft
 
+#custom modules
 from src.spectrogramming import get_spectrogram
 
 #get silent intervals from a recording for which an annotation or prediction exists
