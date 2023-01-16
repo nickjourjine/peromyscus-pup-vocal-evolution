@@ -5,8 +5,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-def get_metric_by_sample_size(model_type,
-                              voc_type, 
+def get_metric_by_sample_size(voc_type, 
                               voc_df, 
                               sample_sizes, 
                               features, 
@@ -50,7 +49,7 @@ def get_metric_by_sample_size(model_type,
     all_downsampled = []
     for sample_n in sample_sizes:
         
-        print('training', model_type, 'on', sample_n, 'vocalizations.')
+        print('training random forest on', sample_n, 'vocalizations.')
         
         #sample equally for each species
         print('\tsampling data...')
@@ -98,7 +97,7 @@ def get_metric_by_sample_size(model_type,
         y_pred = model.predict(X_test)
         report = classification_report(y_test, y_pred, output_dict=True)
         cr_df = pd.DataFrame(report).transpose()
-        cr_df['model_type'] = model_type
+        cr_df['model_type'] = 'random_forest'
         cr_df['sample_size'] = sample_n
         cr_df['voc_type'] = voc_type
         cr_df = cr_df.reset_index().rename(columns={'index':'species'})
