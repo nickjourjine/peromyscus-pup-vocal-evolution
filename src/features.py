@@ -546,27 +546,27 @@ def get_snr(clip_path, noise_path, algorithm = 1):
 # 1: ratio of S mean amplitude envelope to N mean amplitude envelope (mean(env(S))/mean(env(N)))
 # 2: ratio of S amplitude envelope RMS (root mean square) to N amplitude envelope RMS (rms(env(S))/rms(env(N)))
 # 3: ratio of the difference between S amplitude envelope RMS and N amplitude envelope RMS to N amplitude envelope RMS ((rms(env(S)) - rms(env(N)))/rms(env(N)))
-    
-    
-	fs, noise = wavfile.read(noise_path)
-	_, signal = wavfile.read(clip_path)
-	
-	if algorithm == 1:	
-		signal_amplitude_envelope = np.abs(hilbert(signal))
-		noise_amplitdue_envelope = np.abs(hilbert(noise))
-		snr = np.mean(signal_amplitude_envelope)/np.mean(noise_amplitdue_envelope)
-		return snr
-		
-	elif algorithm == 2:
-        
+
+
+    fs, noise = wavfile.read(noise_path)
+    _, signal = wavfile.read(clip_path)
+
+    if algorithm == 1:	
+        signal_amplitude_envelope = np.abs(hilbert(signal))
+        noise_amplitdue_envelope = np.abs(hilbert(noise))
+        snr = np.mean(signal_amplitude_envelope)/np.mean(noise_amplitdue_envelope)
+        return snr
+
+    elif algorithm == 2:
+
         signal_rms = get_rms(y=np.array(signal, 'float'))
         noise_rms = get_rms(y=np.array(noise, 'float'))
         snr = np.mean(signal_rms)/np.mean(noise_rms)
 
-	elif algorithm == 3:
-		signal_amplitude_envelope = np.abs(hilbert(signal))
-		noise_amplitdue_envelope = np.abs(hilbert(noise))
-		snr = (rms(y=signal_amplitude_envelope) - rms(y=noise_amplitdue_envelope))/rms(y=noise_amplitdue_envelope)
+    elif algorithm == 3:
+        signal_amplitude_envelope = np.abs(hilbert(signal))
+        noise_amplitdue_envelope = np.abs(hilbert(noise))
+        snr = (rms(y=signal_amplitude_envelope) - rms(y=noise_amplitdue_envelope))/rms(y=noise_amplitdue_envelope)
 
     return snr
 
