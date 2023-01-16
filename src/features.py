@@ -710,22 +710,22 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir, path_to_
     assert os.path.exists(save_root)
     assert os.path.exists(wav_root)
 
-    #get the species - note that for the non_development data sets these are not strictly species but some other way of grouping the recordings (treatment/mic channel)
+    #get the species that you have segments for - note that for the non_development data sets these are not strictly species but some other way of grouping the recordings (treatment/mic channel)
     if dataset == 'bw_po_cf':
-        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/bw_po_cf/amplitude_segmentated/20220921_030633/all_combined.csv')
-        species_list = sorted(source_df['species'].unique())
+
+        species_list = sorted(['BW', 'PO', 'CF-BW', 'CF-PO'])
 
     elif dataset == 'bw_po_f1':
-        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/bw_po_f1/amplitude_segmentated/20220920_072032/all_combined.csv')
-        species_list = sorted(source_df['species'].unique())
+       
+        species_list = sorted(['BW-PO-cross-F1', 'cross-BW', 'cross-PO'])
 
     elif dataset == 'bw_po_f2':
-        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/bw_po_f2/amplitude_segmentated/20220921_040238/all_combined.csv')
-        species_list = sorted(source_df['species'].unique())
+        
+        species_list = sorted(['ch1', 'ch2', 'ch3', 'ch4', 'ch5', 'ch6', 'ch7', 'ch8'])
         
     elif dataset == 'development':
-        source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/amplitude_segmentation/final/all_predictions.csv')
-        species_list = sorted(source_df['species'].unique())
+        
+        species_list = sorted(['BW', 'GO', 'LL', 'LO', 'MU', 'MZ', 'NB', 'PO', 'SW', 'BK'])
 
     #make a dictionary for paths
     paths_dict = {}
