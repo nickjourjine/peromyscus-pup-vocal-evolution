@@ -658,32 +658,34 @@ def get_clipping_batch(clip_dir, threshold, species = None):
     Returns:
         clipping_df (dataframe): a dataframe where each row is wav file (eg vocalization) and columns are path to wav file, % clipped, and threshold
     """
-	
-	if species != None:
-		to_process = [os.path.join(wav_dir,i) for i in os.listdir(wav_dir) if i.startswith(species) and i.endswith('.wav')]
-	
-	else:
-		to_process = [os.path.join(wav_dir,i) for i in os.listdir(wav_dir) if not i.startswith('.') and i.endswith('.wav')]
 
-	source_files = []
-	clipping_percents = []
-	for wav in tqdm(to_process):
-		#get clipping percent
-		fs, audio = wavfile.read(wav)
-		rect_wav = np.abs(audio)
-		clipping_limit = threshold*32767 #32767 is the max value possible for our wav encoding (16 bit)
-		clipped = rect_wav[rect_wav>clipping_limit]
-		percent_clipped = len(clipped)/len(audio)
-	
-		#update 
-		source_files.append(wav.split('/')[-1])
-		clipping_percents.append(percent_clipped)
+    if species != None:
+        to_process = [os.path.join(wav_dir,i) for i in os.listdir(wav_dir) if i.startswith(species) and i.endswith('.wav')]
 
-	clipping_df = pd.DataFrame()
-	clipping_df['source_file'] = source_files
-	clipping_df['percent_clipped'] = clipping_percents
-	clipping_df['clipping_threshold'] = threshold*32767
-	return clipping_df
+    else:
+        to_process = [os.path.join(wav_dir,i) for i in os.listdir(wav_dir) if not i.startswith('.') and i.endswith('.wav')]
+
+    source_files = []
+    clipping_percents = []
+    for wav in tqdm(to_process):
+        #get clipping percent
+        fs, audio = wavfile.read(wav)
+        rect_wav = np.abs(audio)
+        clipping_limit = threshold*32767 #32767 is the max value possible for our wav encoding (16 bit)
+        clipped = rect_wav[rect_wav>clipping_limit]
+        percent_clipped = len(clipped)/len(audio)
+
+        #update 
+        source_files.append(wav.split('/')[-1])
+        clipping_percents.append(percent_clipped)
+
+    clipping_df = pd.DataFrame()
+    clipping_df['source_file'] = source_files
+    clipping_df['percent_clipped'] = clipping_percents
+    clipping_df['clipping_threshold'] = threshold*32767
+    
+    return clipping_df
+
 def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir):
     """
     Write sbatch job files to run warbleR_feature_extraction.R on a computing cluster 
