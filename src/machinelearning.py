@@ -3,8 +3,14 @@
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
+
+#machine learning
+from sklearn.svm import SVC
+from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
 def get_metric_by_sample_size(voc_type, 
                               voc_df, 
