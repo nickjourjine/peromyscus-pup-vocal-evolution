@@ -705,12 +705,10 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir, path_to_
         None
     """
     
-    path_to_warbleR_extract = '/n/hoekstra_lab_tier1/Users/njourjine/manuscript/notebooks/00_manuscript/warbleR_extract.R'
-    
     #check inputs
-    assert dataset in ['bw_po_cf', 'bw_po_f1', 'bw_po_f2', 'development']
-    assert os.path.exists(save_root)
-    assert os.path.exists(wav_root)
+    #assert dataset in ['bw_po_cf', 'bw_po_f1', 'bw_po_f2', 'development']
+    #assert os.path.exists(save_root)
+    #assert os.path.exists(wav_root)
 
     #get the species - note that for the non_development data sets these are not strictly species but some other way of grouping the recordings (treatment/mic channel)
     if dataset == 'bw_po_cf':
