@@ -570,7 +570,7 @@ def get_snr(clip_path, noise_path, algorithm = 1):
 
 #same as above but iterate through a directory - right now only deal with algorithms 1 and 2
 def get_snr_batch(clip_dir, noise_dir, species, algorithm):
-    
+
     """
     Run get_snr() on a batch of vocalization clips in a directory
 
@@ -581,37 +581,37 @@ def get_snr_batch(clip_dir, noise_dir, species, algorithm):
     Returns:
         snr_df (dataframe): a dataframe where each row is a vocalization and columns are path to vocalization file, snr, and algorithm
     """
-	
-    #get paths to vocalizations
-	if species != None:
-		vocs = [i for i in os.listdir(clip_dir) if i.startswith(species)]
-	else:
-		vocs = [i for i in os.listdir(clip_dir) if not i.startswith('.')]
 
-	sig2noise_list = []
-	source_files = []
+    #get paths to vocalizations
+    if species != None:
+        vocs = [i for i in os.listdir(clip_dir) if i.startswith(species)]
+    else:
+        vocs = [i for i in os.listdir(clip_dir) if not i.startswith('.')]
+
+    sig2noise_list = []
+    source_files = []
 
     #iterate through vocalizations
-	for voc in tqdm(vocs):
+    for voc in tqdm(vocs):
 
-		#get the audio
-		clip_path = clip_dir+voc
-		noise_path = noise_dir+voc.split('_clip')[0]+'_silence-clip_.wav'
-	
-		#get signal to noise
+        #get the audio
+        clip_path = clip_dir+voc
+        noise_path = noise_dir+voc.split('_clip')[0]+'_silence-clip_.wav'
+
+        #get signal to noise
         snr = get_snr(clip_path=clip_path, noise_path=noise_path, algorithm=algorithm)
-        
+
         #update
         sig2noise_list.append(snr)
         source_files.append(voc)
 
     #write data to dataframe
-	snr_df = pd.DataFrame()
-	snr_df['source_file'] = source_files
-	snr_df['snr'] = sig2noise_list
+    snr_df = pd.DataFrame()
+    snr_df['source_file'] = source_files
+    snr_df['snr'] = sig2noise_list
     snr_df['algorithm'] = algorithm
-    
-	return snr_df
+
+    return snr_df
 	
 	
 #calculate how much of the audio clip is clipped
