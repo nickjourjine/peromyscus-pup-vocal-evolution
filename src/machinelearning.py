@@ -19,7 +19,7 @@ def get_metric_by_sample_size(voc_type,
                               random_state, 
                               test_size, 
                               target ='species', 
-                              n_trees = 500 
+                              n_estimators = 500 
                               ):
     """
     Train random forest models to predict species from acoustic features of a particular vocalization type
@@ -33,7 +33,7 @@ def get_metric_by_sample_size(voc_type,
         test_size (list of int or int): number of vocalizations to sample from each species for training. If a list,
                                         will iterate through each sample size and train a model for each
         target (str): the labels to predict (default is 'species')
-        n_trees (int): the number of trees in the random forest (default is 500)
+        n_estimators (int): the number of trees in the random forest (default is 500)
         
     Returns:
         all_scores (dataframe): a dataframe where each row is a model trained on a different amoutn of data and columns are evaluation metrics
