@@ -726,6 +726,9 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir, path_to_
     elif dataset == 'development':
         source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/amplitude_segmentation/final/all_predictions.csv')
         species_list = sorted(source_df['species'].unique())
+        
+    source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/amplitude_segmentation/final/all_predictions.csv')
+    species_list = sorted(source_df['species'].unique())
 
     #make a dictionary for paths
     paths_dict = {}
