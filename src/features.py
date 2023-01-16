@@ -706,9 +706,9 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir, path_to_
     """
     
     #check inputs
-    #assert dataset in ['bw_po_cf', 'bw_po_f1', 'bw_po_f2', 'development']
-    #assert os.path.exists(save_root)
-    #assert os.path.exists(wav_root)
+    assert dataset in ['bw_po_cf', 'bw_po_f1', 'bw_po_f2', 'development']
+    assert os.path.exists(save_root)
+    assert os.path.exists(wav_root)
 
     #get the species - note that for the non_development data sets these are not strictly species but some other way of grouping the recordings (treatment/mic channel)
     if dataset == 'bw_po_cf':
@@ -726,9 +726,6 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir, path_to_
     elif dataset == 'development':
         source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/amplitude_segmentation/final/all_predictions.csv')
         species_list = sorted(source_df['species'].unique())
-        
-    source_df=pd.read_csv('/n/hoekstra_lab_tier1/Users/njourjine/manuscript/audio/segments/amplitude_segmentation/final/all_predictions.csv')
-    species_list = sorted(source_df['species'].unique())
 
     #make a dictionary for paths
     paths_dict = {}
@@ -736,13 +733,14 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir, path_to_
         paths_dict[species] = {}
 
     #make the path to the directory where features will be saved
-    today = str(date.today())
-    today = ('').join(today.split('-'))
-    now = str(datetime.now())
-    time = now.split(' ')[-1]
-    time = ('').join(time.split('.')[0].split(':'))
-    save_path = os.path.join(save_root,('_').join([today,time]))
-    os.mkdir(save_path)
+    if not os.path.exists(save_path):
+        today = str(date.today())
+        today = ('').join(today.split('-'))
+        now = str(datetime.now())
+        time = now.split(' ')[-1]
+        time = ('').join(time.split('.')[0].split(':'))
+        save_path = os.path.join(save_root,('_').join([today,time]))
+        os.mkdir(save_path)
     
     #populate the dictionary
     for species in species_list:
