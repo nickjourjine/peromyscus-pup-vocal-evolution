@@ -686,7 +686,7 @@ def get_clipping_batch(clip_dir, threshold, species = None):
     
     return clipping_df
 
-def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir):
+def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir, path_to_warbleR_extract):
     """
     Write sbatch job files to run warbleR_feature_extraction.R on a computing cluster 
     
@@ -699,6 +699,7 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir):
         save_root (str): the place where csv of acoustic features will be saved
         wav_root (str): the place containing the wav files (one per vocalization) to get features from
         script_dir (str): the place to save the sbatch scripts (one per species)
+        path_to_warbleR_extract (str): path to the file warbleR_extract.R
     
     Returns
         None
@@ -706,7 +707,7 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir):
     
     path_to_warbleR_extract = '/n/hoekstra_lab_tier1/Users/njourjine/manuscript/notebooks/00_manuscript/warbleR_extract.R'
     
-    
+    #check inputs
     assert dataset in ['bw_po_cf', 'bw_po_f1', 'bw_po_f2', 'development']
     assert os.path.exists(save_root)
     assert os.path.exists(wav_root)
