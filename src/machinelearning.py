@@ -5,14 +5,16 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-def get_metric_by_sample_size(voc_type, 
+def get_metric_by_sample_size(
+                              voc_type, 
                               voc_df, 
                               sample_sizes, 
                               features, 
                               seed, 
                               test_size, 
                               target ='species', 
-                              n_trees = 500):
+                              n_trees = 500, 
+                              model_type = 'random_forest'):
     """
     Train random forest models to predict species from acoustic features of a particular vocalization type
     each using a different number of training examples
