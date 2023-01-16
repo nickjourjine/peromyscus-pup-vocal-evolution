@@ -733,14 +733,13 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir, path_to_
         paths_dict[species] = {}
 
     #make the path to the directory where features will be saved
-    if not os.path.exists(save_path):
-        today = str(date.today())
-        today = ('').join(today.split('-'))
-        now = str(datetime.now())
-        time = now.split(' ')[-1]
-        time = ('').join(time.split('.')[0].split(':'))
-        save_path = os.path.join(save_root,('_').join([today,time]))
-        os.mkdir(save_path)
+    today = str(date.today())
+    today = ('').join(today.split('-'))
+    now = str(datetime.now())
+    time = now.split(' ')[-1]
+    time = ('').join(time.split('.')[0].split(':'))
+    save_path = os.path.join(save_root,('_').join([today,time]))
+ 
     
     #populate the dictionary
     for species in species_list:
