@@ -75,7 +75,7 @@ def get_metric_by_sample_size(voc_type,
         ds_df = ds_df[features+[target]]
 
         #assert there are no missing data
-        assert df.isnull().values.any() == False, "There are missing data"
+        assert ds_df.isnull().values.any() == False, "There are missing data"
 
         #split the train/test
         #choose the data and the label and convert to numpy array
