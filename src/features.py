@@ -95,63 +95,63 @@ def check_file_names(directory):
 #get the meta data from checked file names and save it
 def get_meta_data(directory):
     """
-	Get metadata recorded in a raw recording's file name.
+    Get metadata recorded in a raw recording's file name.
 
     Arguments:
         Directory (string): path to the directory containing all of the raw wav files
 
-	Returns:
+    Returns:
         meta_df (dataframe): a dataframe where rows are recordings and columns are metadata categories.
-	"""
+    """
     
-	files = [i for i in os.listdir(directory) if not i.startswith('.')] #ignore hidden files
-	all_rows = []
+    files = [i for i in os.listdir(directory) if not i.startswith('.')]
+    all_rows = []   
+    
+    for filename in files:
 
-	for filename in files:
+        #split the filename
+        parts = filename.split('.')[0].split('_')
 
-		#split the filename
-		parts = filename.split('.')[0].split('_')
+        #get the data
+        channel = parts[4]
+        species = parts[0]
+        parents = parts[1]
+        litter = parts[2]
+        pup = parts[3]
 
-		#get the data
-		channel = parts[4]
-		species = parts[0]
-		parents = parts[1]
-		litter = parts[2]
-		pup = parts[3]
+        if parts[5] not in ['nan', 'na']:
+            weight = int(parts[5])
+        else:
+            weight ='NA'
 
-		if parts[5] not in ['nan', 'na']:
-			weight = int(parts[5])
-		else:
-			weight ='NA'
+        if parts[6] not in ['nan', 'na']:
+            sex = parts[6]
+        else:
+            sex ='NA'
 
-		if parts[6] not in ['nan', 'na']:
-			sex = parts[6]
-		else:
-			sex ='NA'
+        if parts[7] not in ['nan', 'na']:
+            pre_T = int(parts[7])
+        else:
+            pre_T ='NA'
 
-		if parts[7] not in ['nan', 'na']:
-			pre_T = int(parts[7])
-		else:
-			pre_T ='NA'
-
-		if parts[8] not in ['nan', 'na']:
-			post_T = int(parts[7])
-		else:
-			post_T ='NA'
+        if parts[8] not in ['nan', 'na']:
+            post_T = int(parts[7])
+        else:
+            post_T ='NA'
 
 
-		removal_flag = parts[9]
-		age = int(parts[10][1:])
-		date = parts[11]
-		time = parts[12]
+        removal_flag = parts[9]
+        age = int(parts[10][1:])
+        date = parts[11]
+        time = parts[12]
 
-		#compile the date
-		row = [species, parents, litter, pup, channel, weight, sex, pre_T,  post_T, removal_flag, age, date, time]
-		all_rows.append(row)
+        #compile the date
+        row = [species, parents, litter, pup, channel, weight, sex, pre_T,  post_T, removal_flag, age, date, time]
+        all_rows.append(row)
 
-	#put it all in a data frame
-	meta_df = pd.DataFrame.from_records(all_rows, columns =['species', 'parents', 'litter', 'pup', 'channel', 'weight_mg', 'sex', 'pre_T', 'post_T', 'removal_flag', 'age', 'date', 'time'])
-	return meta_df
+    #put it all in a data frame
+    meta_df = pd.DataFrame.from_records(all_rows, columns =['species', 'parents', 'litter', 'pup', 'channel', 'weight_mg', 'sex', 'pre_T', 'post_T', 'removal_flag', 'age', 'date', 'time'])
+    return meta_df
 
 def get_filename_keys(dataset):
     """
