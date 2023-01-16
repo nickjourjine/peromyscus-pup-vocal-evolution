@@ -62,7 +62,7 @@ def get_metric_by_sample_size(voc_type,
             temp= all_annotations.loc[all_annotations['species'] == species]
 
             #sample
-            temp = temp.sample(n=sample_n, random_state = seed)
+            temp = temp.sample(n=sample_n, random_state = random_state)
 
             #update downsampled_list
             downsampled_list.append(temp)
