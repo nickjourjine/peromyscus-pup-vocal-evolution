@@ -41,7 +41,7 @@ def get_metric_by_sample_size(voc_type,
     """
       
     #check inputs
-    assert voc_type in ['cry', 'USV'], "voc_type must be 'cry' or 'USV'"
+    assert voc_type in ['cry', 'USV', 'whistle'], "voc_type must be 'cry' or 'USV' or 'whistle'"
     assert 'human_label' in voc_df.columns, "'human_label' must be a column name in voc_df"
     assert 'species' in voc_df.columns, "'species' must be a column name in voc_df"
     assert set(voc_df['species'].unique()) == set(['BW', 'BK', 'NB', 'SW', 'PO', 'LO', 'GO', 'LL']), "species must be ['BW', 'BK', 'NB', 'SW', 'PO', 'LO', 'GO', 'LL']"
