@@ -739,7 +739,7 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir, path_to_
     time = now.split(' ')[-1]
     time = ('').join(time.split('.')[0].split(':'))
     save_path = os.path.join(save_root,('_').join([today,time]))
- 
+    os.mkdir(save_path)
     
     #populate the dictionary
     for species in species_list:
