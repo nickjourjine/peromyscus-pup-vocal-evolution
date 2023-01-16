@@ -10,7 +10,7 @@ def get_metric_by_sample_size(voc_type,
                               voc_df, 
                               sample_sizes, 
                               features, 
-                              seed, 
+                              random_state, 
                               test_size, 
                               target ='species', 
                               n_trees = 500 
@@ -23,7 +23,7 @@ def get_metric_by_sample_size(voc_type,
         voc_type (str): The vocalization type you want to train on ('cry' or 'USV')
         voc_df (dataframe): a dataframe where each row is a vocalizations, columns are acoustic features,  label (cry or USV) and species
         features (list): list of acoustic features to train on (some or all the acoustic feature column names in voc_df)
-        seed (int): random seed for reproducible sampling
+        random_state (int): random seed for reproducible sampling
         test_size (list of int or int): number of vocalizations to sample from each species for training. If a list,
                                         will iterate through each sample size and train a model for each
         target (str): the labels to predict (default is 'species')
