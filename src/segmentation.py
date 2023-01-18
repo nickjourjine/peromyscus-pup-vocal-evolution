@@ -233,9 +233,9 @@ def ava_get_onsets_offsets(audio, p):
 
 #modified from https://autoencoded-vocal-analysis.readthedocs.io/en/latest/_modules/ava/segmenting/utils.html?highlight=get_spec
 
-def get_background_clips(raw_wavs_dir, save_location, all_segments_df, margin, start_column, stop_column, label_column = None, species = None, units = 's'):
+def get_background_clips(raw_wavs_dir, save_location, all_segments_df, start_column, stop_column, margin = 0, label_column = None, species = None, units = 's'):
 	"""
-	Use amplitude segmentation to generate wav clips of iter-vocalization audio. 
+	Use amplitude segmentation to generate wav clips of inter-vocalization audio. 
 	Similar to get_wav_clips except get the non-vocalization audio clips.
 
 	Arguments:
