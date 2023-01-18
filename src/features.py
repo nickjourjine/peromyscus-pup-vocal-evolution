@@ -13,86 +13,7 @@ from scipy.signal import stft
 from scipy.signal import hilbert
 from datetime import date, datetime
 
-def check_file_names(directory):
-	"""
-	check that file names follow the naming convention used by other functions
 
-	Parameters
-	----------
-	directory (string): path to the directory containing all of the raw wav files
-
-	Returns
-	-------
-	bad_lengths (list): a list of file names that don't have the right number of items 
-	wrong_order (list): a list of lists containing file names that have the correct number 
-    of items but at least one of them is not what it should be at index 0 
-    and the location that has incorrect information at index 1.
-
-
-	"""
-
-	#directory is the directory containing the raw wav files to be checked
-	files = [i for i in os.listdir(directory) if not i.startswith('.')] #ignore hidden files
-
-	#check the files that don't have he correct number of entries and keep a list of those that don't
-	bad_lengths = []
-	for file in files:
-		mdata = file.split('_')
-		if len(mdata) != 13:
-			bad_lengths.append(file)
-
-	#ch2_BK_24224x25894_ltr1_pup1_ch2_3700_m_358_302_fr0_p5_2021-10-22_11-05-10.wav
-	#check that the correct info is in the correct position (make sure to fix any files from the above cell before running)
-
-	wrong_order = []
-	species = ['BK', 'BW', 'MU', 'NB', 'IS', 'SW', 'LL', 'GO', 'LO', 'PO', 'MZ']
-
-	files = [i for i in os.listdir(directory) if not i.startswith('.')] #ignore hidden files
-
-	for file in files:
-		mdata = file.split('_')
-		if mdata[0] not in species:
-			wrong_order.append([file, 0])
-
-		elif len(mdata[1]) != 11:
-			wrong_order.append([file, 1])
-
-		elif not mdata[2].startswith('ltr'):
-			wrong_order.append([file, 2])
-
-		elif not mdata[3].startswith('pup'):
-			wrong_order.append([file, 3])
-
-		elif not mdata[4].startswith('ch'):
-			wrong_order.append([file, 4])
-
-		elif len(mdata[5]) != 4:
-			wrong_order.append([file, 5])
-
-		elif mdata[6] not in ['m', 'f']:
-			wrong_order.append([file, 6])
-
-		elif len(mdata[7]) != 3:
-			wrong_order.append([file, 7])
-
-		elif len(mdata[8]) != 3:
-			wrong_order.append([file, 8])
-
-		elif mdata[9] not in ['fr0', 'fr1']:
-			wrong_order.append([file, 9])
-
-		elif mdata[10] not in ['p1', 'p3', 'p5','p7', 'p9','p11','p13']:
-			wrong_order.append([file, 10])
-
-		elif mdata[11].split('-')[0] not in ['2019', '2020', '2021', '2022']:
-			wrong_order.append([file, 11])
-
-		elif len(mdata[12]) != 12:
-			wrong_order.append([file, 12])
-
-	return bad_lengths, wrong_order
-
-#get the meta data from checked file names and save it
 def get_meta_data(directory):
     """
     Get metadata recorded in a raw recording's file name.
@@ -710,7 +631,8 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir, path_to_
     assert os.path.exists(save_root)
     assert os.path.exists(wav_root)
 
-    #get the species that you have segments for - note that for the non_development data sets these are not strictly species but some other way of grouping the recordings (treatment/mic channel)
+    #get the species that you have segments for - note that for the non_development data sets these are not strictly species but some other 
+    #useful way of grouping the recordings (treatment/mic channel)
     if dataset == 'bw_po_cf':
 
         species_list = sorted(['BW', 'PO', 'CF-BW', 'CF-PO'])
