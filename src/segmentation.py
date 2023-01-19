@@ -125,7 +125,8 @@ def get_amplitude_segments(audio_dir, save_dir, seg_params, species = None, thre
                 nonvocal['start_seconds'] = None
                 nonvocal['stop_seconds'] = None
                 nonvocal['source_file'] = file
-                nonvocal.to_csv(save_dir+file.split('/')[-1][:-4]+'.csv', index=False)
+                csv_save_name = os.path.join(save_dir,file.split('/')[-1][:-4]+'.csv')
+                nonvocal.to_csv(csv_save_name, index=False)
 
     print('segmented', counter, 'files')
     print('#######################')
