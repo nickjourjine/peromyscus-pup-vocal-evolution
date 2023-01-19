@@ -52,7 +52,7 @@ def get_amplitude_segments(audio_dir, save_dir, seg_params, species = None, thre
 
     #subset by species if you want
     elif species != None:
-        wav_files = [audio_dir+i for i in os.listdir(audio_dir) if i.endswith('.wav') and not i.startswith('.') and i.startswith(species)]
+        wav_files = [os.path.join(audio_dir,i) for i in os.listdir(audio_dir) if i.endswith('.wav') and not i.startswith('.') and i.startswith(species)]
         not_done = [i for i in wav_files if i.split('/')[-1] not in done]
         print('Segmenting species', species)
 
