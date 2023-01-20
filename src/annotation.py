@@ -41,16 +41,16 @@ def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_d
        None
     """
     #check if you already have a noise clip
+    print('getting starts and stops from...')
+    print('\t',pup)
     if pup+'_noiseclip'+'.wav' in os.listdir(save_dir):
-        print('Noise clip already exists for this recording')
+        print('\tnoise clip already exists for this recording')
         return
 
     #get the segments
-    print('getting starts and stops from...')
     seg_df = pd.read_csv(seg_csv)
     seg_df = seg_df.loc[seg_df['source_file'] == pup+'.wav']
-    print('\t\,pup)
- 
+
     #get the silent intervals
     start_column = [i for i in seg_df.columns if 'start' in i][0]
     stop_column = [i for i in seg_df.columns if 'end' in i or 'stop' in i][0]
@@ -60,13 +60,11 @@ def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_d
     print('there are', len(noise_starts), 'clips to peruse...')
 
     #get the audio
-    print('\tgetting audio..')
-    wav_name = ('.').join([pup,'.wav'])
+    print('\tgetting raw audio..')
+    wav_name = ('.').join([pup,'wav'])
     fs, audio = wavfile.read(os.path.join(audio_dir,wav_name))
 
-    print('\tgetting clips...')
-    rms_values = []
-
+    print('\tgetting clips from the audio...')
     if len(seg_df) > 0: #if there are vocalizations, looks through the silent periods for good ones
         counter = 0
         for stop, start in zip(noise_stops, noise_starts):
@@ -96,7 +94,7 @@ def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_d
                 plt.show()
 
                 #get input 
-                val = input("looks ok? (y/n/exit/x to clip the wav)")
+                val = input("looks ok? (y/n/next to go to the next pup/x to clip the wav)")
                 if val == 'y':
                     if clip_name not in os.listdir(save_dir):
                         print('saving clip...')
@@ -107,7 +105,7 @@ def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_d
                         continue
                 elif val == 'n':
                     continue
-                elif val =='exit':
+                elif val =='next':
                     return
                 elif val == 'x':
                     start_change = input("how many seconds into this clip do you want it to start?")
