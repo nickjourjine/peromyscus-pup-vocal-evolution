@@ -22,7 +22,7 @@ from scipy.signal import stft
 from src.spectrogramming import get_spectrogram
 
 #get silent intervals from a recording for which an annotation or prediction exists
-def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin, min_dur=2, max_dur=3, units = 's'):
+def get_noise_clip(pup, audio_dir, seg_df, save_dir, margin, min_dur=2, max_dur=3, units = 's'):
 	"""
 	Interactive function to choose silent intervals from a recording for which an annotation or prediction exists. Useful for
 	defining noise floors for each raw recording.
@@ -40,133 +40,133 @@ def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin, min_dur=2, max_dur
 	Returns:
 	   None
 	"""
-	#check if you already have a noise clip
-	if pup+'_noiseclip'+'.wav' in os.listdir(save_dir):
-		print('Noise clip already exists for this recording')
-		return
-	
-	#get the segments
-	print('getting starts and stops..')
+    #check if you already have a noise clip
+    if pup+'_noiseclip'+'.wav' in os.listdir(save_dir):
+        print('Noise clip already exists for this recording')
+        return
+
+    #get the segments
+    print('getting starts and stops..')
     seg_df = pd.read_csv(seg_csv)
     seg_df = seg_df.loc[seg_df['source_file'] == pup+'.wav']
     print(pup)
     print(seg_df['source_file'].unique())
 
-	#get the silent intervals
-	start_column = [i for i in seg_df.columns if 'start' in i][0]
-	stop_column = [i for i in seg_df.columns if 'end' in i or 'stop' in i][0]
-	
-	noise_stops = [float(i) for i in seg_df[start_column][1:]]
-	noise_starts = [float(i) for i in seg_df[stop_column][:-1]]
-	print('there are', len(noise_starts), 'clips to peruse...')
+    #get the silent intervals
+    start_column = [i for i in seg_df.columns if 'start' in i][0]
+    stop_column = [i for i in seg_df.columns if 'end' in i or 'stop' in i][0]
 
-	#get the audio
-	print('getting audio..')
-	wav_name = pup+'.wav'
-	fs, audio = wavfile.read(audio_dir+wav_name)
+    noise_stops = [float(i) for i in seg_df[start_column][1:]]
+    noise_starts = [float(i) for i in seg_df[stop_column][:-1]]
+    print('there are', len(noise_starts), 'clips to peruse...')
 
-	print('getting clips...')
-	rms_values = []
+    #get the audio
+    print('getting audio..')
+    wav_name = pup+'.wav'
+    fs, audio = wavfile.read(audio_dir+wav_name)
 
-	if len(seg_df) > 0: #if there are vocalizations, looks through the silent periods for good ones
-		counter = 0
-		for stop, start in zip(noise_stops, noise_starts):
+    print('getting clips...')
+    rms_values = []
 
-			noise_length = stop-start
-			
-			
-			if min_dur < noise_length < max_dur:
-				counter += 1
-				#clip the clip
-				clip_name = pup+'_noiseclip'+'.wav'
-				
-				if units == 's':
-					start= int((start+margin)*fs)
-					stop =  int((stop-margin)*fs)
-					clip = audio[start:stop] #get the clip
-				elif units == 'ms':
-					start= int((start+margin)*(fs/1000))
-					stop =  int((stop-margin)*(fs/1000))
-					clip = audio[start:stop] #get the clip
-					
-				print(start/fs, ':', stop/fs, units)
-				t,f,spec = stft(clip, noverlap=256, nperseg=1024, fs=fs)
-				spec = np.log(np.abs(spec))
-				plt.figure(figsize=[5,5])
-				plt.imshow(spec, origin='lower')
-				plt.show()
-	
-				#get input 
-				val = input("looks ok? (y/n/x/exit)")
-				if val == 'y':
-					if clip_name not in os.listdir(save_dir):
-						print('saving clip...')
-						wavfile.write(save_dir + clip_name, fs, clip) #write the clip to a wav
-						return
-					else:
-						print('clip already exists...')
-						continue
-				elif val == 'n':
-					continue
-				elif val =='exit':
-					return
-				elif val == 'x':
-					start_change = input("how many seconds into this clip do you want it to start?")
-					stop_change = input("how many seconds before the end of this clip do you want it to end?")
-					
-					if units == 's':
-						new_start = start/fs + float(start_change)
-						new_stop = stop/fs - float(stop_change)
-						
-					elif units == 'ms':
-						new_start = start/fs + float(start_change)/1000
-						new_stop = stop/fs - float(stop_change)/1000
-					
-					if units == 's':
-						start= int((float(new_start)+margin)*fs)
-						stop =  int((float(new_stop)-margin)*fs)
-						clip = audio[start:stop] #get the clip
-						
-					elif units == 'ms':
-						start= int((float(new_start)/1000+margin)*(fs/1000))
-						stop =  int((float(new_stop)/1000-margin)*(fs/1000))
-						clip = audio[start:stop] #get the clip
-						
-					t,f,spec = stft(clip, noverlap=512, nperseg=1024, fs=fs)
-					spec = np.log(np.abs(spec))
-					plt.figure(figsize=[5,5])
-					plt.imshow(spec, origin='lower')
-					plt.show()
-					if clip_name not in os.listdir(save_dir):
-						print('saving this clip...')
-						wavfile.write(save_dir + clip_name, fs, clip) #write the clip to a wav
-						return
-					else:
-						print('clip already exists...')
-						continue
+    if len(seg_df) > 0: #if there are vocalizations, looks through the silent periods for good ones
+        counter = 0
+        for stop, start in zip(noise_stops, noise_starts):
 
-				else:
-					print('type y (looks good) or n (see the next one)')
-			
-		if counter == 0:
-			print('No clips found in the range specified by min_dur and max_dur. Are your time units correct?')
-			
-	else: #if no vocs, just pick a random 1 s clip
-		#clip the clip
-		print('no vocs, saving this clip...')
-		clip_name = pup+'_noiseclip'+'.wav'
-		start = 3*fs
-		stop = 4*fs
-		clip = audio[start:stop] #get the clip
-		t,f,spec = stft(clip, noverlap=256, nperseg=1024, fs=fs)
-		spec = np.log(np.abs(spec))
-		print(clip_name)
-		plt.figure(figsize=[5,5])
-		plt.imshow(spec, origin='lower')
-		plt.show()
-		wavfile.write(save_dir + clip_name, fs, clip) #write the clip to a wav
+            noise_length = stop-start
 
-	print('done.')
+
+            if min_dur < noise_length < max_dur:
+                counter += 1
+                #clip the clip
+                clip_name = pup+'_noiseclip'+'.wav'
+
+                if units == 's':
+                    start= int((start+margin)*fs)
+                    stop =  int((stop-margin)*fs)
+                    clip = audio[start:stop] #get the clip
+                elif units == 'ms':
+                    start= int((start+margin)*(fs/1000))
+                    stop =  int((stop-margin)*(fs/1000))
+                    clip = audio[start:stop] #get the clip
+
+                print(start/fs, ':', stop/fs, units)
+                t,f,spec = stft(clip, noverlap=256, nperseg=1024, fs=fs)
+                spec = np.log(np.abs(spec))
+                plt.figure(figsize=[5,5])
+                plt.imshow(spec, origin='lower')
+                plt.show()
+
+                #get input 
+                val = input("looks ok? (y/n/x/exit)")
+                if val == 'y':
+                    if clip_name not in os.listdir(save_dir):
+                        print('saving clip...')
+                        wavfile.write(save_dir + clip_name, fs, clip) #write the clip to a wav
+                        return
+                    else:
+                        print('clip already exists...')
+                        continue
+                elif val == 'n':
+                    continue
+                elif val =='exit':
+                    return
+                elif val == 'x':
+                    start_change = input("how many seconds into this clip do you want it to start?")
+                    stop_change = input("how many seconds before the end of this clip do you want it to end?")
+
+                    if units == 's':
+                        new_start = start/fs + float(start_change)
+                        new_stop = stop/fs - float(stop_change)
+
+                    elif units == 'ms':
+                        new_start = start/fs + float(start_change)/1000
+                        new_stop = stop/fs - float(stop_change)/1000
+
+                    if units == 's':
+                        start= int((float(new_start)+margin)*fs)
+                        stop =  int((float(new_stop)-margin)*fs)
+                        clip = audio[start:stop] #get the clip
+
+                    elif units == 'ms':
+                        start= int((float(new_start)/1000+margin)*(fs/1000))
+                        stop =  int((float(new_stop)/1000-margin)*(fs/1000))
+                        clip = audio[start:stop] #get the clip
+
+                    t,f,spec = stft(clip, noverlap=512, nperseg=1024, fs=fs)
+                    spec = np.log(np.abs(spec))
+                    plt.figure(figsize=[5,5])
+                    plt.imshow(spec, origin='lower')
+                    plt.show()
+                    if clip_name not in os.listdir(save_dir):
+                        print('saving this clip...')
+                        wavfile.write(save_dir + clip_name, fs, clip) #write the clip to a wav
+                        return
+                    else:
+                        print('clip already exists...')
+                        continue
+
+                else:
+                    print('type y (looks good) or n (see the next one)')
+
+        if counter == 0:
+            print('No clips found in the range specified by min_dur and max_dur. Are your time units correct?')
+
+    else: #if no vocs, just pick a random 1 s clip
+        #clip the clip
+        print('no vocs, saving this clip...')
+        clip_name = pup+'_noiseclip'+'.wav'
+        start = 3*fs
+        stop = 4*fs
+        clip = audio[start:stop] #get the clip
+        t,f,spec = stft(clip, noverlap=256, nperseg=1024, fs=fs)
+        spec = np.log(np.abs(spec))
+        print(clip_name)
+        plt.figure(figsize=[5,5])
+        plt.imshow(spec, origin='lower')
+        plt.show()
+        wavfile.write(save_dir + clip_name, fs, clip) #write the clip to a wav
+
+    print('done.')
 
 #iterate through all of the noise clips generated with get_noise() and calculate a noise floor from each (2 standard deviations above the median)
 #noise_dir is the directory holding all of these clips
