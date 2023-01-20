@@ -511,79 +511,7 @@ def prune_segments(predictions_df, intersyll_threshold,duration_threshold,annota
     
     
 #probably delete
-def prune_segments_testing(predictions_df_path, intersyll_threshold,duration_threshold, save_dir):
-	"""
-	version of prune_segments() that takes a path instead of a dataframe and doesn't return 
-	anything (just saves a csv). Useful for testing on annotated recordings.
 
-	Parameters
-	----------
-	predictions_df_path (dataframe): path to a dataframe of vocalization start and stop predictions (ie the result of segment wavs)
-
-	intersyll_threshold (float): the time in seconds below which two vocalizations will be merged into one
-
-	duration_threshold (float): the duration in seconds below which predicted vocalizations will be ignored
-
-	save_dir (string): path to the directory to save the csv of pruned segments
-
-	Returns
-	-------
-	all_new_segments (datframe): predictions_df with the mergers and deletions carried out.
-
-	"""
-
-	predictions_df = pd.read_csv(predictions_df_path)
-
-	all_intersyllables = []
-	files = []
-	dfs = []
-	source_files = [i for i in predictions_df['source_file'].unique()]
-
-	print('merging vocalizations separated by less than', intersyll_threshold, 'milliseonds..')
-	for file in source_files:   
-		#get the predictions
-		test_df = predictions_df.loc[predictions_df['source_file'] == file]
-
-		#get the starts and stops
-		starts = list(test_df['start_seconds'])
-		stops = list(test_df['stop_seconds'])
-		start_or_stop = ['start']*len(starts)+['stop']*len(stops)
-
-		#sort them so they are alternating
-		intersyllable = pd.DataFrame()
-		intersyllable['times'] = starts + stops
-		intersyllable['start_or_stop'] = start_or_stop
-		intersyllable = intersyllable.sort_values(by='times').reset_index(drop=True)
-
-		#get the difference between consecutive rows - these are the intersyllable intervals
-		intersyllable['diff'] = intersyllable['times'].diff()
-
-		#get the rows to drop
-		diffs = list(intersyllable['diff'])
-
-		short_ones_starts = [i for i in range(len(diffs)) if diffs[i] < intersyll_threshold]
-		short_ones_stops = [i-1 for i in short_ones_starts]
-		to_drop = sorted(short_ones_starts +short_ones_stops)
-
-		#drop them
-		pruned_intersyllable = intersyllable.drop(index =to_drop)
-
-		#make a new segments_file
-		new_segments = pd.DataFrame()
-		new_segments['start_seconds'] = list(pruned_intersyllable['times'].loc[pruned_intersyllable['start_or_stop'] == 'start'])
-		new_segments['stop_seconds'] = list(pruned_intersyllable['times'].loc[pruned_intersyllable['start_or_stop'] == 'stop'])
-		new_segments['source_file'] = [file for i in range(len(new_segments))]
-		dfs.append(new_segments)
-
-	#save
-	all_new_segments = pd.concat(dfs)
-	print('dropping vocalizations shorter than', duration_threshold, 'milliseonds..')
-	all_new_segments['duration'] = all_new_segments['stop_seconds'] - all_new_segments['start_seconds']
-	all_new_segments = all_new_segments.loc[all_new_segments['duration'] > duration_threshold]
-	all_new_segments.to_csv(save_dir+'all_predictions_pruned.csv', index=False)
-	print('done.')
-
-#amplitude segmentation modified from https://autoencoded-vocal-analysis.readthedocs.io/en/latest/_modules/ava/segmenting/amplitude_segmentation.html#get_onsets_offsets
 def evaluate_predictions(prediction_csv, annotations_csv, annotations_dir, tolerance, verbose=False):
     """
     Evaluate predictions on annotated recordings.
