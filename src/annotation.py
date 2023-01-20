@@ -22,7 +22,7 @@ from scipy.signal import stft
 from src.spectrogramming import get_spectrogram
 
 #get silent intervals from a recording for which an annotation or prediction exists
-def get_noise_clip(pup, audio_dir, seg_df, save_dir, margin, min_dur=2, max_dur=3, units = 's'):
+def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_dur=3, units = 's'):
     """
     Interactive function to choose silent intervals from a recording for which an annotation or prediction exists. Useful for
     defining noise floors for each raw recording.
