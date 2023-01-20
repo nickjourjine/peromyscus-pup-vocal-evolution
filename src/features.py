@@ -4,6 +4,7 @@
 #file system
 import os
 import numpy as np
+from numpy.lib.stride_tricks import as_strided
 import pandas as pd
 from tqdm import tqdm
 
@@ -278,6 +279,168 @@ def aggregate_all_pups(source_list, dataset, save, save_name, save_dir, features
         
 
 
+def librosa_utils_frame(x, *, frame_length, hop_length, axis=-1, writeable=False, subok=False):
+    """
+    This is a copy of librosa.features.rms() from v0.9.2
+    
+    Slice a data array into (overlapping) frames.
+
+    This implementation uses low-level stride manipulation to avoid
+    making a copy of the data.  The resulting frame representation
+    is a new view of the same input data.
+
+    For example, a one-dimensional input ``x = [0, 1, 2, 3, 4, 5, 6]``
+    can be framed with frame length 3 and hop length 2 in two ways.
+    The first (``axis=-1``), results in the array ``x_frames``::
+
+        [[0, 2, 4],
+         [1, 3, 5],
+         [2, 4, 6]]
+
+    where each column ``x_frames[:, i]`` contains a contiguous slice of
+    the input ``x[i * hop_length : i * hop_length + frame_length]``.
+
+    The second way (``axis=0``) results in the array ``x_frames``::
+
+        [[0, 1, 2],
+         [2, 3, 4],
+         [4, 5, 6]]
+
+    where each row ``x_frames[i]`` contains a contiguous slice of the input.
+
+    This generalizes to higher dimensional inputs, as shown in the examples below.
+    In general, the framing operation increments by 1 the number of dimensions,
+    adding a new "frame axis" either before the framing axis (if ``axis < 0``)
+    or after the framing axis (if ``axis >= 0``).
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Array to frame
+    frame_length : int > 0 [scalar]
+        Length of the frame
+    hop_length : int > 0 [scalar]
+        Number of steps to advance between frames
+    axis : int
+        The axis along which to frame.
+    writeable : bool
+        If ``True``, then the framed view of ``x`` is read-only.
+        If ``False``, then the framed view is read-write.  Note that writing to the framed view
+        will also write to the input array ``x`` in this case.
+    subok : bool
+        If True, sub-classes will be passed-through, otherwise the returned array will be
+        forced to be a base-class array (default).
+
+    Returns
+    -------
+    x_frames : np.ndarray [shape=(..., frame_length, N_FRAMES, ...)]
+        A framed view of ``x``, for example with ``axis=-1`` (framing on the last dimension)::
+
+            x_frames[..., j] == x[..., j * hop_length : j * hop_length + frame_length]
+
+        If ``axis=0`` (framing on the first dimension), then::
+
+            x_frames[j] = x[j * hop_length : j * hop_length + frame_length]
+
+    Raises
+    ------
+    ParameterError
+        If ``x.shape[axis] < frame_length``, there is not enough data to fill one frame.
+
+        If ``hop_length < 1``, frames cannot advance.
+
+    See Also
+    --------
+    numpy.lib.stride_tricks.as_strided
+
+    Examples
+    --------
+    Extract 2048-sample frames from monophonic signal with a hop of 64 samples per frame
+
+    >>> y, sr = librosa.load(librosa.ex('trumpet'))
+    >>> frames = librosa.util.frame(y, frame_length=2048, hop_length=64)
+    >>> frames
+    array([[-1.407e-03, -2.604e-02, ..., -1.795e-05, -8.108e-06],
+           [-4.461e-04, -3.721e-02, ..., -1.573e-05, -1.652e-05],
+           ...,
+           [ 7.960e-02, -2.335e-01, ..., -6.815e-06,  1.266e-05],
+           [ 9.568e-02, -1.252e-01, ...,  7.397e-06, -1.921e-05]],
+          dtype=float32)
+    >>> y.shape
+    (117601,)
+
+    >>> frames.shape
+    (2048, 1806)
+
+    Or frame along the first axis instead of the last:
+
+    >>> frames = librosa.util.frame(y, frame_length=2048, hop_length=64, axis=0)
+    >>> frames.shape
+    (1806, 2048)
+
+    Frame a stereo signal:
+
+    >>> y, sr = librosa.load(librosa.ex('trumpet', hq=True), mono=False)
+    >>> y.shape
+    (2, 117601)
+    >>> frames = librosa.util.frame(y, frame_length=2048, hop_length=64)
+    (2, 2048, 1806)
+
+    Carve an STFT into fixed-length patches of 32 frames with 50% overlap
+
+    >>> y, sr = librosa.load(librosa.ex('trumpet'))
+    >>> S = np.abs(librosa.stft(y))
+    >>> S.shape
+    (1025, 230)
+    >>> S_patch = librosa.util.frame(S, frame_length=32, hop_length=16)
+    >>> S_patch.shape
+    (1025, 32, 13)
+    >>> # The first patch contains the first 32 frames of S
+    >>> np.allclose(S_patch[:, :, 0], S[:, :32])
+    True
+    >>> # The second patch contains frames 16 to 16+32=48, and so on
+    >>> np.allclose(S_patch[:, :, 1], S[:, 16:48])
+    True
+    """
+
+    # This implementation is derived from numpy.lib.stride_tricks.sliding_window_view (1.20.0)
+    # https://numpy.org/doc/stable/reference/generated/numpy.lib.stride_tricks.sliding_window_view.html
+
+    x = np.array(x, copy=False, subok=subok)
+
+    if x.shape[axis] < frame_length:
+        raise ParameterError(
+            "Input is too short (n={:d})"
+            " for frame_length={:d}".format(x.shape[axis], frame_length)
+        )
+
+    if hop_length < 1:
+        raise ParameterError("Invalid hop_length: {:d}".format(hop_length))
+
+    # put our new within-frame axis at the end for now
+    out_strides = x.strides + tuple([x.strides[axis]])
+
+    # Reduce the shape on the framing axis
+    x_shape_trimmed = list(x.shape)
+    x_shape_trimmed[axis] -= frame_length - 1
+
+    out_shape = tuple(x_shape_trimmed) + tuple([frame_length])
+    xw = as_strided(
+        x, strides=out_strides, shape=out_shape, subok=subok, writeable=writeable
+    )
+
+    if axis < 0:
+        target_axis = axis - 1
+    else:
+        target_axis = axis + 1
+
+    xw = np.moveaxis(xw, -1, target_axis)
+
+    # Downsample along the target axis
+    slices = [slice(None)] * xw.ndim
+    slices[axis] = slice(0, None, hop_length)
+    return xw[tuple(slices)]
+    
 def get_rms(*, y=None, S=None, frame_length=2048, hop_length=512, center=True, pad_mode="constant",):
     """
     This is a copy of librosa.features.rms() from v0.9.2
@@ -361,7 +524,7 @@ def get_rms(*, y=None, S=None, frame_length=2048, hop_length=512, center=True, p
             padding[-1] = (int(frame_length // 2), int(frame_length // 2))
             y = np.pad(y, padding, mode=pad_mode)
 
-        x = util.frame(y, frame_length=frame_length, hop_length=hop_length)
+        x = librosa_utils_frame(y, frame_length=frame_length, hop_length=hop_length)
 
         # Calculate power
         power = np.mean(np.abs(x) ** 2, axis=-2, keepdims=True)
@@ -415,7 +578,6 @@ def get_snr(clip_path, noise_path, algorithm = 1):
         signal_amplitude_envelope = np.abs(hilbert(signal))
         noise_amplitdue_envelope = np.abs(hilbert(noise))
         snr = np.mean(signal_amplitude_envelope)/np.mean(noise_amplitdue_envelope)
-        return snr
 
     elif algorithm == 2:
 
@@ -431,14 +593,14 @@ def get_snr(clip_path, noise_path, algorithm = 1):
     return snr
 
 #same as above but iterate through a directory - right now only deal with algorithms 1 and 2
-def get_snr_batch(clip_dir, noise_dir, species, algorithm):
+def get_snr_batch(clips_dir, noise_dir, species, algorithm):
 
     """
     Run get_snr() on a batch of vocalization clips in a directory
 
     Arguments:
-        clip_dir (str): the path to the directory containing the wav clips for which you want to get signal to noise
-        noise_dir (str): the path to the directory containing the background clip for each wav in clip_dir (one noise clip per recording)
+        clips_path (str): the path to the directory containing the wav clips for which you want to get signal to noise
+        noise_path (str): the path to the directory containing the background clip for each wav in clip_dir (one noise clip per recording)
         algorithm (int): Must be one of 1, 2, or 3 (see comment below for description of each)
     Returns:
         snr_df (dataframe): a dataframe where each row is a vocalization and columns are path to vocalization file, snr, and algorithm
@@ -446,19 +608,19 @@ def get_snr_batch(clip_dir, noise_dir, species, algorithm):
 
     #get paths to vocalizations
     if species != None:
-        vocs = [i for i in os.listdir(clip_dir) if i.startswith(species)]
+        vocs = [i for i in os.listdir(clips_dir) if i.startswith(species)]
     else:
-        vocs = [i for i in os.listdir(clip_dir) if not i.startswith('.')]
+        vocs = [i for i in os.listdir(clips_dir) if not i.startswith('.')]
 
     sig2noise_list = []
     source_files = []
 
     #iterate through vocalizations
     for voc in tqdm(vocs):
-
+        
         #get the audio
-        clip_path = clip_dir+voc
-        noise_path = noise_dir+voc.split('_clip')[0]+'_silence-clip_.wav'
+        clip_path = os.path.join(clips_dir,voc)
+        noise_path = os.path.join(noise_dir,voc.split('_clip')[0]+'_noiseclip.wav')
 
         #get signal to noise
         snr = get_snr(clip_path=clip_path, noise_path=noise_path, algorithm=algorithm)
@@ -494,7 +656,7 @@ def get_clipping(clip_path, threshold):
     """
 
     #check inputs
-    assert os.path.exists(wav)
+    assert os.path.exists(clip_path)
     assert 0 < threshold < 1, "Threshold must be a value between 0 and 1"
     
     #calculate percent clipped
@@ -508,13 +670,13 @@ def get_clipping(clip_path, threshold):
     
 #same as above but iterate through a directory of clips
 #returns two lists: the clipping percents and the corres
-def get_clipping_batch(clip_dir, threshold, species = None):
+def get_clipping_batch(wav_dir, threshold, species = None):
     
     """
     Run get_clipping() on a batch of vocalization clips in a directory
 
     Arguments:
-        clip_dir (str): the path to the directory containing the wav clips for which you want to evaluate clipping
+        wav_dir (str): the path to the directory containing the wav clips for which you want to evaluate clipping
         threshold (float): percent of maximum value (32767) possible to be read with 16-bit encoding above which you will call audio "clipped"
         species (str): optional 2 letter code for species if you only want to process one species at a time
     Returns:
@@ -531,12 +693,8 @@ def get_clipping_batch(clip_dir, threshold, species = None):
     clipping_percents = []
     for wav in tqdm(to_process):
         #get clipping percent
-        fs, audio = wavfile.read(wav)
-        rect_wav = np.abs(audio)
-        clipping_limit = threshold*32767 #32767 is the max value possible for our wav encoding (16 bit)
-        clipped = rect_wav[rect_wav>clipping_limit]
-        percent_clipped = len(clipped)/len(audio)
-
+        percent_clipped = get_clipping(clip_path=wav, threshold=threshold)
+        
         #update 
         source_files.append(wav.split('/')[-1])
         clipping_percents.append(percent_clipped)
