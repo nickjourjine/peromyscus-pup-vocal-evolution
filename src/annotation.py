@@ -61,11 +61,11 @@ def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_d
     print('there are', len(noise_starts), 'clips to peruse...')
 
     #get the audio
-    print('getting audio..')
-    wav_name = pup+'.wav'
-    fs, audio = wavfile.read(audio_dir+wav_name)
+    print('\tgetting audio..')
+    wav_name = ('.').join(pup,'.wav')
+    fs, audio = wavfile.read(os.path.join(audio_dir,wav_name))
 
-    print('getting clips...')
+    print('\tgetting clips...')
     rms_values = []
 
     if len(seg_df) > 0: #if there are vocalizations, looks through the silent periods for good ones
@@ -97,11 +97,11 @@ def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_d
                 plt.show()
 
                 #get input 
-                val = input("looks ok? (y/n/x/exit)")
+                val = input("looks ok? (y/n/exit/x to clip the wav)")
                 if val == 'y':
                     if clip_name not in os.listdir(save_dir):
                         print('saving clip...')
-                        wavfile.write(save_dir + clip_name, fs, clip) #write the clip to a wav
+                        wavfile.write(os.path.join(save_dir,clip_name), fs, clip) #write the clip to a wav
                         return
                     else:
                         print('clip already exists...')
@@ -139,7 +139,7 @@ def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_d
                     plt.show()
                     if clip_name not in os.listdir(save_dir):
                         print('saving this clip...')
-                        wavfile.write(save_dir + clip_name, fs, clip) #write the clip to a wav
+                        wavfile.write(os.path.join(save_dir,clip_name), fs, clip) #write the clip to a wav
                         return
                     else:
                         print('clip already exists...')
@@ -151,7 +151,7 @@ def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_d
         if counter == 0:
             print('No clips found in the range specified by min_dur and max_dur. Are your time units correct?')
 
-    else: #if no vocs, just pick a random 1 s clip
+    else: #if no vocs, just pick a random 1 s clip between seconds 3 and 4
         #clip the clip
         print('no vocs, saving this clip...')
         clip_name = pup+'_noiseclip'+'.wav'
@@ -164,7 +164,7 @@ def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_d
         plt.figure(figsize=[5,5])
         plt.imshow(spec, origin='lower')
         plt.show()
-        wavfile.write(save_dir + clip_name, fs, clip) #write the clip to a wav
+        wavfile.write(os.path.join(save_dir,clip_name), fs, clip) #write the clip to a wav
 
     print('done.')
 
