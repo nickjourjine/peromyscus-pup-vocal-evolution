@@ -46,12 +46,11 @@ def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_d
         return
 
     #get the segments
-    print('getting starts and stops..')
+    print('getting starts and stops from...')
     seg_df = pd.read_csv(seg_csv)
     seg_df = seg_df.loc[seg_df['source_file'] == pup+'.wav']
-    print(pup)
-    print(seg_df['source_file'].unique())
-
+    print('\t\,pup)
+ 
     #get the silent intervals
     start_column = [i for i in seg_df.columns if 'start' in i][0]
     stop_column = [i for i in seg_df.columns if 'end' in i or 'stop' in i][0]
@@ -62,7 +61,7 @@ def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_d
 
     #get the audio
     print('\tgetting audio..')
-    wav_name = ('.').join(pup,'.wav')
+    wav_name = ('.').join([pup,'.wav'])
     fs, audio = wavfile.read(os.path.join(audio_dir,wav_name))
 
     print('\tgetting clips...')
