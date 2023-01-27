@@ -114,16 +114,16 @@ def aggregate_pup(source_path, features, features_path):
     assert pup.split('.')[0] in list(feats['pup']), "the pup printed above isn't in the 'pup' column in the features_path file"
     feats = feats.loc[feats['pup'] == pup.split('.')[0]]
 
-    #get the summary stats: cry count, whistle count, scratch count, and mean, median, min, max, and standard deviation of each vocalization of each type
+    #get the summary stats: cry count, USV count, scratch count, and mean, median, min, max, and standard deviation of each vocalization of each type
 
     #count data
     feats_dict = {}
     feats_dict['pup'] = pup
     feats_dict['cry_count'] = len(feats.loc[feats['predicted_label'] == 'cry'])
-    feats_dict['whistle_count'] = len(feats.loc[feats['predicted_label'] == 'whistle'])
+    feats_dict['USV_count'] = len(feats.loc[feats['predicted_label'] == 'USV'])
     feats_dict['scratch_count'] = len(feats.loc[feats['predicted_label'] == 'scratch'])
-    feats_dict['total_sounds_detected'] = feats_dict['cry_count']+feats_dict['whistle_count']+feats_dict['scratch_count']
-    feats_dict['total_vocalizations_detects'] = feats_dict['cry_count']+feats_dict['whistle_count']
+    feats_dict['total_sounds_detected'] = feats_dict['cry_count']+feats_dict['USV_count']+feats_dict['scratch_count']
+    feats_dict['total_vocalizations_detects'] = feats_dict['cry_count']+feats_dict['USV_count']
 
 
     #use groupby to get the aggregate feature data - note it is not strictly necessayr to group by pup since there is only one pup
@@ -157,20 +157,20 @@ def aggregate_pup(source_path, features, features_path):
         try: cry_med = meds.loc['cry']
         except:cry_med = float('NaN')
 
-        try: whistle_mean = means.loc['whistle']
-        except: whistle_mean = float('NaN')
+        try: USV_mean = means.loc['USV']
+        except: USV_mean = float('NaN')
 
-        try: whistle_variance = variances.loc['whistle']
-        except: whistle_variance = float('NaN')
+        try: USV_variance = variances.loc['USV']
+        except: USV_variance = float('NaN')
 
-        try: whistle_min = mins.loc['whistle']
-        except: whistle_min = float('NaN')
+        try: USV_min = mins.loc['USV']
+        except: USV_min = float('NaN')
 
-        try: whistle_max = maxs.loc['whistle']
-        except: whistle_max = float('NaN')
+        try: USV_max = maxs.loc['USV']
+        except: USV_max = float('NaN')
 
-        try: whistle_med = meds.loc['whistle']
-        except: whistle_med = float('NaN')
+        try: USV_med = meds.loc['USV']
+        except: USV_med = float('NaN')
 
         try: scratch_mean = means.loc['scratch']
         except: scratch_mean = float('NaN')
@@ -188,23 +188,23 @@ def aggregate_pup(source_path, features, features_path):
         except: scratch_med = float('NaN')
 
         feats_dict[f"cry_{feature}_mean"] = cry_mean
-        feats_dict[f"whistle_{feature}_mean"] = whistle_mean
+        feats_dict[f"USV_{feature}_mean"] = USV_mean
         feats_dict[f"scratch_{feature}_mean"] = scratch_mean
 
         feats_dict[f"cry_{feature}_variance"] = cry_variance
-        feats_dict[f"whistle_{feature}_variance"] = whistle_variance
+        feats_dict[f"USV_{feature}_variance"] = USV_variance
         feats_dict[f"scratch_{feature}_variance"] = scratch_variance
 
         feats_dict[f"cry_{feature}_min"] = cry_min
-        feats_dict[f"whistle_{feature}_min"] = whistle_min
+        feats_dict[f"USV_{feature}_min"] = USV_min
         feats_dict[f"scratch_{feature}_min"] = scratch_min
 
         feats_dict[f"cry_{feature}_max"] = cry_max
-        feats_dict[f"whistle_{feature}_max"] = whistle_max
+        feats_dict[f"USV_{feature}_max"] = USV_max
         feats_dict[f"scratch_{feature}_max"] = scratch_max
 
         feats_dict[f"cry_{feature}_med"] = cry_med
-        feats_dict[f"whistle_{feature}_med"] = whistle_med
+        feats_dict[f"USV_{feature}_med"] = USV_med
         feats_dict[f"scratch_{feature}_med"] = scratch_med
 
     return feats_dict
