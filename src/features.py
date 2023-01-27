@@ -54,7 +54,7 @@ def get_pup_metadata(source_path, dataset):
     Get meta data for each pup in a dataset: species, dam/sire, litterID, littersize, weight, sex, age, temperatures.
 
     Arguments:
-        source_file (str): the full path to the recording for which you want metdata
+        source_path (str): the full path to the recording for which you want metdata
         dataset (str): the dataset the pup comes from. Must be one of 'development', 'bw_po_f1', 'bw_po_cf', 'bw_po_f2'
 
     Returns:
@@ -82,14 +82,14 @@ def get_pup_metadata(source_path, dataset):
     return pup_dict
 
 
-def aggregate_pup(source_path, features, features_path):
+def aggregate_pup(source_path, features, features_df):
     """
     Aggregate warbleR acoustic features for a single pup
 
     Arguments:
-        features_path (str): full path to the labeled warbleR features to use
-        source_path (str): the full path to the recording for which you want metdata
+        source_path (str): the full path to the raw recording for which you want metdata
         features (list): list of warbleR features you want to aggregate
+        features_df (dataframe): dataframe with the features you want to use
 
     Returns:
         aggregate_data (dict): a dictionary of the metadata, which can be further aggregated into a dataframe with multiple pups
@@ -123,8 +123,7 @@ def aggregate_pup(source_path, features, features_path):
     feats_dict['USV_count'] = len(feats.loc[feats['predicted_label'] == 'USV'])
     feats_dict['scratch_count'] = len(feats.loc[feats['predicted_label'] == 'scratch'])
     feats_dict['total_sounds_detected'] = feats_dict['cry_count']+feats_dict['USV_count']+feats_dict['scratch_count']
-    feats_dict['total_vocalizations_detects'] = feats_dict['cry_count']+feats_dict['USV_count']
-
+    feats_dict['total_vocalizations_detected'] = feats_dict['cry_count']+feats_dict['USV_count']
 
     #use groupby to get the aggregate feature data - note it is not strictly necessayr to group by pup since there is only one pup
     #keeping anyway because it works and I don't have time to break it
@@ -211,25 +210,22 @@ def aggregate_pup(source_path, features, features_path):
 
 
 
-def aggregate_all_pups(source_list, dataset, save, save_name, save_dir, features, features_path):
+def aggregate_all_pups(source_list, dataset, features_df):
     """
     For each pup in source_list, aggregate warbleR acoustic features by pup, get pup metdata, then combine them into a single dataframe
 
     Arguments:
         source_list (list): list of full paths to source_files (one per pup) you want to process
         dataset (str): the dataset the pups come from. Must be one of 'development', 'bw_po_f1', 'bw_po_cf', 'bw_po_f2'
-        save (boolean): if True, save the datframe as a csv named save_name in the directory save_dir
-        save_name (string): name of the csv to save if save is True
-        save_dir (string): full path to the directory where the dataframe should be saved if save is true
-        raw_dir (string): 
+        features_df (list): dataframe of the features to aggregate
 
     Returns:
         all_pup_data (dataframe): a dictionary of the metadata, which can be further aggregated into a dataframe with multiple pups
 
     """
 
-    #assert inputs make sense
-    assert dataset in ['development', 'bw_po_f1', 'bw_po_cf', 'bw_po_f2'], "dataset must be one of ['development', 'bw_po_f1', 'bw_po_cf', 'bw_po_f2']"
+    #check inputs 
+    assert dataset in ['development', 'bw_po_f1', 'bw_po_cf', 'bw_po_f2']
     assert isinstance(save, bool), "save must be True or False"
     assert os.path.exists(save_dir), "save_dir doesn't exist"
 
@@ -253,28 +249,6 @@ def aggregate_all_pups(source_list, dataset, save, save_name, save_dir, features
     all_pup_features_df = pd.concat(all_pup_features)
     all_pup_metadata_df = pd.concat(all_pup_metadata)
     
-    #
-    if save:
-        if save_name.endswith('.csv'):
-            features_save_name = ('_').join([save_name.split('.')[0], 'agg_features.csv'])
-            metadata_save_name = ('_').join([save_name.split('.')[0], 'agg_metadata.csv'])
-            
-            all_pup_features_df.to_csv(os.path.join(save_dir,features_save_name), index=False)
-            all_pup_metadata_df.to_csv(os.path.join(save_dir,metadata_save_name), index=False)
-            
-            print('saved features to:\n\t', os.path.join(save_dir,features_save_name))
-            print('saved metadata to:\n\t', os.path.join(save_dir,metadata_save_name))
-            
-        elif save_name.endswith('.feather'):
-            features_save_name = ('_').join([save_name.split('.')[0], 'agg_features.feather'])
-            metadata_save_name = ('_').join([save_name.split('.')[0], 'agg_metadata.feather'])
-            
-            all_pup_features_df.to_feather(os.path.join(save_dir,features_save_name))
-            all_pup_metadata_df.to_csv(os.path.join(save_dir,metadata_save_name))
-            
-            print('saved features to:\n\t', os.path.join(save_dir,features_save_name))
-            print('saved metadata to:\n\t', os.path.join(save_dir,metadata_save_name))
-
     return all_pup_features_df, all_pup_metadata_df
         
 
