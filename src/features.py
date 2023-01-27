@@ -99,20 +99,12 @@ def aggregate_pup(source_path, features, features_df):
     #get the pup name and assert dataset is correct
     pup = os.path.split(source_path)[-1]
     print(pup)
-    assert len(features) == 26
+    assert len(features) == 26, "There should be 26 features"
+    assert np.any(features_df.duplicated()) == 0, "There are duplicates in your features dataframe"
+    assert pup.split('.')[0] in list(features_df['pup']), "the pup printed above isn't in the 'pup' column in the features_path file"
 
-    #get the path to the warbleR features and make sure it's what you expect
-    if features_path.endswith('.csv'):
-        feats = pd.read_csv(features_path)
-    elif features_path.endswith('.feather'):
-        feats = pd.read_feather(features_path)
-
-    assert 'BW_hdbscan_label0_withspace.wav.wav' not in feats['source_file'] #TODO fix this for the development dataset
-    assert np.any(feats.duplicated()) == 0
-
-    #get the vocalizations from this pup
-    assert pup.split('.')[0] in list(feats['pup']), "the pup printed above isn't in the 'pup' column in the features_path file"
-    feats = feats.loc[feats['pup'] == pup.split('.')[0]]
+    #get the vocalizations 
+    feats = features_df.loc[features_df['pup'] == pup.split('.')[0]]
 
     #get the summary stats: cry count, USV count, scratch count, and mean, median, min, max, and standard deviation of each vocalization of each type
 
@@ -210,14 +202,15 @@ def aggregate_pup(source_path, features, features_df):
 
 
 
-def aggregate_all_pups(source_list, dataset, features_df):
+def aggregate_all_pups(source_list, dataset, features, features_df):
     """
     For each pup in source_list, aggregate warbleR acoustic features by pup, get pup metdata, then combine them into a single dataframe
 
     Arguments:
         source_list (list): list of full paths to source_files (one per pup) you want to process
         dataset (str): the dataset the pups come from. Must be one of 'development', 'bw_po_f1', 'bw_po_cf', 'bw_po_f2'
-        features_df (list): dataframe of the features to aggregate
+        features (list): the features to aggregate
+        features_df (dataframe): dataframe of the features to aggregate
 
     Returns:
         all_pup_data (dataframe): a dictionary of the metadata, which can be further aggregated into a dataframe with multiple pups
@@ -226,8 +219,6 @@ def aggregate_all_pups(source_list, dataset, features_df):
 
     #check inputs 
     assert dataset in ['development', 'bw_po_f1', 'bw_po_cf', 'bw_po_f2']
-    assert isinstance(save, bool), "save must be True or False"
-    assert os.path.exists(save_dir), "save_dir doesn't exist"
 
     #get the metadata for every pup
     all_pup_metadata = []
@@ -240,7 +231,7 @@ def aggregate_all_pups(source_list, dataset, features_df):
     #get the aggregate features for every pup
     all_pup_features = []
     for source_path in source_list:
-        pup_features = aggregate_pup(source_path=source_path, features=features, features_path=features_path)
+        pup_features = aggregate_pup(source_path=source_path, features=features, features_df=features_df)
         pup_features = pd.DataFrame.from_records([pup_features])
         all_pup_features.append(pup_features)
     print('done collecting pup features...')
