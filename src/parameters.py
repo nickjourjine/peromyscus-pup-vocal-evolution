@@ -36,7 +36,7 @@ def get_date_time():
     
     return ('_').join([current_date,current_time])
 
-def save_parameters(params, save_dir, save_name):
+def save(params, save_dir, save_name):
     """  
     Save a dictionary as .json and double check if you want to overwrite it.
 
@@ -92,7 +92,7 @@ def save_parameters(params, save_dir, save_name):
     
     
     
-def load_parameters(save_dir, save_name):
+def load(save_dir, save_name):
 	"""
 	Load a dictionary from .json - does the reverse of save_parameters()
 
