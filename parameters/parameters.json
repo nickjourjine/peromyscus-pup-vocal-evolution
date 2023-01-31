@@ -1,0 +1,102 @@
+{
+    "excluded_pups": {
+        "development": [
+            "NB_28306x26626_ltr1_pup4_ch5_5000_m_334_300_fr0_p11_2021-10-04_10-04-13.wavSW_29542x30031_ltr1_pup7_ch8_1600_m_348_263_fr0_p1_2022-01-05_10-54-58.wavBK_26464x25680_ltr4_pup7_ch8_4500_f_355_318_fr0_p7_2021-11-24_09-42-41.wavBK_26464x25680_ltr1_pup7_ch8_7300_m_305_301_fr0_p13_2021-08-24_09-30-30.wavGO_24860x23748_ltr2_pup4_ch5_4700_m_324_292_fr0_p9_2021-10-02_12-35-01.wavGO_23883x23084_ltr2_pup4_ch6_6100_f_329_304_fr0_p11_2019-12-03_10-35-37.wavBK_24865x26049_ltr2_pup7_ch8_3700_f_355_326_fr0_p11_2021-11-03_10-08-14.wavBW_31385x31476_ltr1_pup1_ch2_2100_m_361_266_fr0_p3_2022-01-19_09-21-48.wavNB_28306x26626_ltr1_pup2_ch3_5100_m_327_298_fr0_p11_2021-10-04_10-04-13.wavNB_28306x26626_ltr1_pup5_ch6_5200_f_326_304_fr0_p11_2021-10-04_10-04-13.wav"
+        ],
+        "bw_po_cf": [
+            "BW_18315x18495_pup2_p09_3800_m_4_2018-10-03_09-42-05.wav",
+            "BW_18315x18495_pup3_p09_4100_f_4_2018-10-03_09-50-18.wav",
+            "BW_18387x18857_pup1_p09_4300_m_2_2018-10-05_09-25-47.wav",
+            "BW_21607x21658_pup1_p09_5100_f_2_2018-12-20_09-34-24.wav"
+        ],
+        "bw_po_f1": [],
+        "bw_po_f2": [
+            [
+                "ch8_BWxPO-cross-F2_26878x27490_fam-D3_ltr6_pup4_ch8_4700_f_333_298_fr0_p9_2021-04-16_15-26-07.wav",
+                "ch8_BWxPO-cross-F2_26878x27490_fam-D3_ltr6_pup7_ch8_3800_f_338_285_fr0_p7_2021-04-14_17-27-18.wav",
+                "ch8_BWxPO-cross-F2_27404x27407_fam-A7_ltr1_pup7_ch8_4200_m_328_275_fr1_p7_2021-01-05_13-47-10.wav"
+            ]
+        ]
+    },
+    "figure_1_panel_f": {
+        "sampling_seed": 123456,
+        "num_to_sample": 50000,
+        "distance_threshold": 90,
+        "features": [
+            "duration",
+            "time.median",
+            "time.Q25",
+            "time.Q75",
+            "time.IQR",
+            "meanfreq",
+            "freq.median",
+            "freq.Q25",
+            "freq.Q75",
+            "freq.IQR",
+            "meanpeakf",
+            "dfslope",
+            "enddom",
+            "startdom",
+            "modindx",
+            "dfrange",
+            "sfm",
+            "entropy",
+            "sp.ent",
+            "time.ent",
+            "sd",
+            "meandom",
+            "mindom",
+            "maxdom",
+            "skew",
+            "kurt"
+        ]
+    },
+    "figure_2_panels_CD": {
+        "sampling_seed": 123456,
+        "num_to_sample": 500
+    },
+    "supp_figure_1": {
+        "BW": {
+            "cry_seed": 54321,
+            "USV_seed": 1234567
+        },
+        "BK": {
+            "cry_seed": 12345,
+            "USV_seed": 987654
+        },
+        "SW": {
+            "cry_seed": 54321,
+            "USV_seed": 33333
+        },
+        "NB": {
+            "cry_seed": 9876,
+            "USV_seed": 222223
+        },
+        "PO": {
+            "cry_seed": 87654321,
+            "USV_seed": 22222
+        },
+        "LO": {
+            "cry_seed": 12345678,
+            "USV_seed": 55555
+        },
+        "GO": {
+            "cry_seed": 123456,
+            "USV_seed": 1234567
+        },
+        "LL": {
+            "cry_seed": 987654,
+            "USV_seed": 1234567
+        },
+        "MU": {
+            "USV_seed": 123456789
+        },
+        "MZ": {
+            "USV_seed": 4444
+        }
+    },
+    "supp_figure_2": {
+        "sampling_seed": 123456,
+        "num_to_sample": 500
+    }
+}
