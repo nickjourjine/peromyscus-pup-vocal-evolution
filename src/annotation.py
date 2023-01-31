@@ -21,7 +21,53 @@ from scipy.signal import stft
 #custom modules
 from src.spectrogramming import get_spectrogram
 
-#get silent intervals from a recording for which an annotation or prediction exists
+def get_annotations(annotations_root, species_list):
+    """
+    Retrieve a dataframe of annotated vocalizations with labels from the annotations root directory. Note this is 
+    not intended to be a versatile function, just a helper function to get species' annotations to reproduce figures
+
+    Arguments:
+        annotations_root (str): path to the directory containing the annotations with one subdirectory for each species
+        species_list (list): a list of the species annotations to retrieve using 2-letter code, eg ['BW', 'BK', 'NB', 'SW', 'PO', 'LO', 'GO', 'LL']
+        
+    Returns:
+       all_combined (dataframe): a dataframe of the annotations excluding those that are 'scratch' or 'none'
+       
+    """
+    
+    annotated_files = []
+
+    for species in species_list:
+        print(species)
+
+        #get the label_0 files
+        label_0_voc_path = os.path.join(annotations_root,species,'annotations','hdbscan_label_0',species+'_hdbscan_label0_all.feather')
+
+        #load the data
+        label_0_voc_df = pd.read_feather(label_0_voc_path)
+
+        #drop the spectrogram pixels and append
+        label_0_voc_df = label_0_voc_df[['source_file', 'umap1', 'umap2', 'hdbscan_label', 'human_label']]
+        annotated_files.append(label_0_voc_df)
+
+        #get the label_1 files 
+        label_1_voc_path = os.path.join(annotations_root,species,'annotations','hdbscan_label_1',species+'_hdbscan_label1_all.feather')
+
+        #load the data
+        label_1_voc_df = pd.read_feather(label_1_voc_path)
+
+        #drop the spectrogram pixels and append
+        label_1_voc_df = label_1_voc_df[['source_file', 'umap1', 'umap2', 'hdbscan_label', 'human_label']]
+        annotated_files.append(label_1_voc_df)
+
+    #combine the annotations and remove the non-vocal sounds
+    print('combining files...')
+    all_combined = pd.concat(annotated_files)
+    all_combined['species'] = [i.split('_')[0] for i in all_combined['source_file']]
+    all_combined = all_combined.loc[~all_combined['human_label'].isin(['scratch', 'none'])]
+    all_combined = all_combined.reset_index(drop=True)
+    
+    
 def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_dur=3, units = 's'):
     """
     Interactive function to choose silent intervals from a recording for which an annotation or prediction exists. Useful for
