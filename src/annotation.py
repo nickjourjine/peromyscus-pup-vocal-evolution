@@ -21,7 +21,7 @@ from scipy.signal import stft
 #custom modules
 from src.spectrogramming import get_spectrogram
 
-def get_annotations(annotations_root, species_list):
+def get(annotations_root, species_list):
     """
     Retrieve a dataframe of annotated vocalizations with labels from the annotations root directory. Note this is 
     not intended to be a versatile function, just a helper function to get species' annotations to reproduce figures
