@@ -21,10 +21,48 @@ from scipy.signal import stft
 #custom modules
 from src.spectrogramming import get_spectrogram
 
-def get(annotations_root, species_list):
+def sample(seed, num_to_sample, annotated_df):
+    """
+    Sample annotations from the output of annotation.get(). Note this is 
+    not intended to be a versatile function, just a helper to reproduce figures.
+
+    Arguments:
+        seed (int): seed for reproducible sampling
+        num_to_sample (list): number of rows to sample for each vocalization type ('cry' or 'USV')
+        annotated_df (dataframe): the dataframe to sample from, eg output of annotation.get()
+        
+    Returns:
+       downsampled_df (dataframe): a dataframe of the annotations downsampled to have num_to_sample vocs from each voc type from each species
+       
+    """
+    
+    downsampled_list = []
+
+    for species in annotated_df['species'].unique():
+
+        #separate the voc types
+        temp_cry = annotated_df.loc[annotated_df['species'] == species].loc[annotated_df['human_label'] == 'cry']
+        temp_USV = annotated_df.loc[annotated_df['species'] == species].loc[annotated_df['human_label'] == 'USV']
+
+        #sample
+        temp_cry = temp_cry.sample(n=num_to_sample, random_state = seed)
+        temp_USV = temp_USV.sample(n=num_to_sample, random_state = seed)
+
+        #reasemble
+        downsampled_species = pd.concat([temp_cry, temp_USV])
+
+        #update downsampled_list
+        downsampled_list.append(downsampled_species)
+
+    #assemble all the species
+    downsampled_df = pd.concat(downsampled_list).reset_index(drop=True)
+    
+    return downsampled_df
+    
+def get(annotations_root, species_list = ['BW', 'BK', 'NB', 'SW', 'PO', 'LO', 'GO', 'LL']):
     """
     Retrieve a dataframe of annotated vocalizations with labels from the annotations root directory. Note this is 
-    not intended to be a versatile function, just a helper function to get species' annotations to reproduce figures
+    not intended to be a versatile function, just a helper to reproduce figures.
 
     Arguments:
         annotations_root (str): path to the directory containing the annotations with one subdirectory for each species
@@ -66,6 +104,8 @@ def get(annotations_root, species_list):
     all_combined['species'] = [i.split('_')[0] for i in all_combined['source_file']]
     all_combined = all_combined.loc[~all_combined['human_label'].isin(['scratch', 'none'])]
     all_combined = all_combined.reset_index(drop=True)
+    
+    return all_combined
     
     
 def get_noise_clip(pup, audio_dir, seg_csv, save_dir, margin=0, min_dur=2, max_dur=3, units = 's'):
