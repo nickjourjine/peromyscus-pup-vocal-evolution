@@ -68,7 +68,7 @@ def get_filename_keys(dataset):
     #these are keys for each dataset that correspond to information in each file name
     development_keys = ['species', 'breeding_pair','litter_number', 'pup_number', 'mic_channel', 'weight_mg', 'sex', 'start_temp', 'end_temp', 
                         'removal_flag', 'age', 'date', 'time']
-    bw_po_cf_keys = ['species', 'breeding_pair', 'pup_number', 'age', 'weight_mg', 'sex', 'litter_size', 'date', 'time']
+    bw_po_cf_keys = ['species', 'breeding_pair', 'pup_number', 'age', 'weight_mg', 'sex', 'litter_size', 'date', 't ime']
     bw_po_f1_keys = development_keys.copy()
     bw_po_f2_keys = ['mic_chanel_prefix', 'cross_prefix', 'breeding_pair','family', 'litter_number', 'pup_number', 'mic_channel', 'weight_mg', 
                      'sex', 'start_temp', 'end_temp', 'removal_flag', 'age', 'date', 'time']
@@ -118,7 +118,7 @@ def get_pup_metadata(source_path, dataset):
     return pup_dict
 
 
-def aggregate_pup(source_path, features, features_df):
+def aggregate_pup(source_path, features, features_df, drop_clipped):
     """
     Aggregate warbleR acoustic features for a single pup
 
@@ -126,18 +126,20 @@ def aggregate_pup(source_path, features, features_df):
         source_path (str): the full path to the raw recording for which you want metdata
         features (list): list of warbleR features you want to aggregate
         features_df (dataframe): dataframe with the features you want to use
+        drop_clipped (bool): if True, drop vocalizations that are clipped from acoustic feature aggregation (but not from counts)
 
     Returns:
         aggregate_data (dict): a dictionary of the metadata, which can be further aggregated into a dataframe with multiple pups
 
     """
 
-    #get the pup name and assert dataset is correct
+    #get the pup name and assert dataset is what you expect
     pup = os.path.split(source_path)[-1]
     print(pup)
     assert len(features) == 26, "There should be 26 features"
     assert np.any(features_df.duplicated()) == 0, "There are duplicates in your features dataframe"
     assert pup.split('.')[0] in list(features_df['pup']), "the pup printed above isn't in the 'pup' column in the features_path file"
+    assert 'percent_clipped' in features_df.columns, "You haven't added a column indicating which vocalizations are clipped"
 
     #get the vocalizations 
     feats = features_df.loc[features_df['pup'] == pup.split('.')[0]]
@@ -153,92 +155,86 @@ def aggregate_pup(source_path, features, features_df):
     feats_dict['total_sounds_detected'] = feats_dict['cry_count']+feats_dict['USV_count']+feats_dict['scratch_count']
     feats_dict['total_vocalizations_detected'] = feats_dict['cry_count']+feats_dict['USV_count']
 
-    #use groupby to get the aggregate feature data - note it is not strictly necessayr to group by pup since there is only one pup
-    #keeping anyway because it works and I don't have time to break it
-    feat_means = feats.groupby(by=['predicted_label']).mean()
-    feat_vars = feats.groupby(by=['predicted_label']).aggregate(np.var)
-    feat_mins = feats.groupby(by=['predicted_label']).aggregate(np.min)  
-    feat_maxs = feats.groupby(by=['predicted_label']).aggregate(np.max)
-    feat_meds = feats.groupby(by=['predicted_label']).aggregate(np.median) 
-
     for feature in features:
-        
-        variances = feat_vars[feature]
-        means = feat_means[feature]
-        mins = feat_mins[feature]
-        maxs = feat_maxs[feature]
-        meds = feat_meds[feature]
 
-        try: cry_mean = means.loc['cry']
+        if drop_clipped:
+            feats_no_clipping = feats.loc[feats['percent_clipped'] == 0]
+            assert sum(feats_no_clipping['percent_clipped']) == 0
+
+            if not feature in ['duration']: #don't get spectral features from clipped vocs
+                variances = feats_no_clipping[[feature, 'predicted_label']].groupby(by=['predicted_label']).mean()
+                means = feats_no_clipping[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.var)
+                mins = feats_no_clipping[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.min)  
+                maxs = feats_no_clipping[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.max)
+                meds = feats_no_clipping[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.median) 
+
+            else: #still get duration from clipped vocalizations
+                variances = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).mean()
+                means = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.var)
+                mins = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.min)  
+                maxs = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.max)
+                meds = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.median) 
+        
+        else:
+            variances = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).mean()
+            means = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.var)
+            mins = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.min)  
+            maxs = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.max)
+            meds = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.median) 
+
+
+        try: cry_mean = means.loc['cry'][0]
         except: cry_mean = float('NaN')
 
-        try: cry_variance = variances.loc['cry']
+        try: cry_variance = variances.loc['cry'][0]
         except:cry_variance = float('NaN')
 
-        try: cry_min = mins.loc['cry']
+        try: cry_min = mins.loc['cry'][0]
         except:cry_min = float('NaN')
 
-        try: cry_max = maxs.loc['cry']
+        try: cry_max = maxs.loc['cry'][0]
         except:cry_max = float('NaN')
 
-        try: cry_med = meds.loc['cry']
+        try: cry_med = meds.loc['cry'][0]
         except:cry_med = float('NaN')
 
-        try: USV_mean = means.loc['USV']
+        try: USV_mean = means.loc['USV'][0]
         except: USV_mean = float('NaN')
 
-        try: USV_variance = variances.loc['USV']
+        try: USV_variance = variances.loc['USV'][0]
         except: USV_variance = float('NaN')
 
-        try: USV_min = mins.loc['USV']
+        try: USV_min = mins.loc['USV'][0]
         except: USV_min = float('NaN')
 
-        try: USV_max = maxs.loc['USV']
+        try: USV_max = maxs.loc['USV'][0]
         except: USV_max = float('NaN')
 
-        try: USV_med = meds.loc['USV']
+        try: USV_med = meds.loc['USV'][0]
         except: USV_med = float('NaN')
 
-        try: scratch_mean = means.loc['scratch']
-        except: scratch_mean = float('NaN')
-
-        try: scratch_variance = variances.loc['scratch']
-        except: scratch_variance = float('NaN')
-
-        try: scratch_min = mins.loc['scratch']
-        except: scratch_min = float('NaN')
-
-        try: scratch_max = maxs.loc['scratch']
-        except: scratch_max = float('NaN')
-
-        try: scratch_med = meds.loc['scratch']
-        except: scratch_med = float('NaN')
 
         feats_dict[f"cry_{feature}_mean"] = cry_mean
         feats_dict[f"USV_{feature}_mean"] = USV_mean
-        feats_dict[f"scratch_{feature}_mean"] = scratch_mean
 
         feats_dict[f"cry_{feature}_variance"] = cry_variance
         feats_dict[f"USV_{feature}_variance"] = USV_variance
-        feats_dict[f"scratch_{feature}_variance"] = scratch_variance
 
         feats_dict[f"cry_{feature}_min"] = cry_min
         feats_dict[f"USV_{feature}_min"] = USV_min
-        feats_dict[f"scratch_{feature}_min"] = scratch_min
 
         feats_dict[f"cry_{feature}_max"] = cry_max
         feats_dict[f"USV_{feature}_max"] = USV_max
-        feats_dict[f"scratch_{feature}_max"] = scratch_max
 
         feats_dict[f"cry_{feature}_med"] = cry_med
         feats_dict[f"USV_{feature}_med"] = USV_med
-        feats_dict[f"scratch_{feature}_med"] = scratch_med
+
 
     return feats_dict
 
 
 
-def aggregate_all_pups(source_list, dataset, features, features_df):
+def aggregate_all_pups(source_list, dataset, features, features_df, drop_clipped):
     """
     For each pup in source_list, aggregate warbleR acoustic features by pup, get pup metdata, then combine them into a single dataframe
 
@@ -247,6 +243,7 @@ def aggregate_all_pups(source_list, dataset, features, features_df):
         dataset (str): the dataset the pups come from. Must be one of 'development', 'bw_po_f1', 'bw_po_cf', 'bw_po_f2'
         features (list): the features to aggregate
         features_df (dataframe): dataframe of the features to aggregate
+        drop_clipped (bool): if True, drop vocalizations that are clipped from acoustic feature aggregation (but not from counts)
 
     Returns:
         all_pup_data (dataframe): a dictionary of the metadata, which can be further aggregated into a dataframe with multiple pups
@@ -267,7 +264,7 @@ def aggregate_all_pups(source_list, dataset, features, features_df):
     #get the aggregate features for every pup
     all_pup_features = []
     for source_path in source_list:
-        pup_features = aggregate_pup(source_path=source_path, features=features, features_df=features_df)
+        pup_features = aggregate_pup(source_path=source_path, features=features, features_df=features_df, drop_clipped=drop_clipped)
         pup_features = pd.DataFrame.from_records([pup_features])
         all_pup_features.append(pup_features)
     print('done collecting pup features...')
@@ -280,370 +277,6 @@ def aggregate_all_pups(source_list, dataset, features, features_df):
         
 
 
-def librosa_utils_frame(x, *, frame_length, hop_length, axis=-1, writeable=False, subok=False):
-    """
-    This is a copy of librosa.features.rms() from v0.9.2
-    
-    Slice a data array into (overlapping) frames.
-
-    This implementation uses low-level stride manipulation to avoid
-    making a copy of the data.  The resulting frame representation
-    is a new view of the same input data.
-
-    For example, a one-dimensional input ``x = [0, 1, 2, 3, 4, 5, 6]``
-    can be framed with frame length 3 and hop length 2 in two ways.
-    The first (``axis=-1``), results in the array ``x_frames``::
-
-        [[0, 2, 4],
-         [1, 3, 5],
-         [2, 4, 6]]
-
-    where each column ``x_frames[:, i]`` contains a contiguous slice of
-    the input ``x[i * hop_length : i * hop_length + frame_length]``.
-
-    The second way (``axis=0``) results in the array ``x_frames``::
-
-        [[0, 1, 2],
-         [2, 3, 4],
-         [4, 5, 6]]
-
-    where each row ``x_frames[i]`` contains a contiguous slice of the input.
-
-    This generalizes to higher dimensional inputs, as shown in the examples below.
-    In general, the framing operation increments by 1 the number of dimensions,
-    adding a new "frame axis" either before the framing axis (if ``axis < 0``)
-    or after the framing axis (if ``axis >= 0``).
-
-    Parameters
-    ----------
-    x : np.ndarray
-        Array to frame
-    frame_length : int > 0 [scalar]
-        Length of the frame
-    hop_length : int > 0 [scalar]
-        Number of steps to advance between frames
-    axis : int
-        The axis along which to frame.
-    writeable : bool
-        If ``True``, then the framed view of ``x`` is read-only.
-        If ``False``, then the framed view is read-write.  Note that writing to the framed view
-        will also write to the input array ``x`` in this case.
-    subok : bool
-        If True, sub-classes will be passed-through, otherwise the returned array will be
-        forced to be a base-class array (default).
-
-    Returns
-    -------
-    x_frames : np.ndarray [shape=(..., frame_length, N_FRAMES, ...)]
-        A framed view of ``x``, for example with ``axis=-1`` (framing on the last dimension)::
-
-            x_frames[..., j] == x[..., j * hop_length : j * hop_length + frame_length]
-
-        If ``axis=0`` (framing on the first dimension), then::
-
-            x_frames[j] = x[j * hop_length : j * hop_length + frame_length]
-
-    Raises
-    ------
-    ParameterError
-        If ``x.shape[axis] < frame_length``, there is not enough data to fill one frame.
-
-        If ``hop_length < 1``, frames cannot advance.
-
-    See Also
-    --------
-    numpy.lib.stride_tricks.as_strided
-
-    Examples
-    --------
-    Extract 2048-sample frames from monophonic signal with a hop of 64 samples per frame
-
-    >>> y, sr = librosa.load(librosa.ex('trumpet'))
-    >>> frames = librosa.util.frame(y, frame_length=2048, hop_length=64)
-    >>> frames
-    array([[-1.407e-03, -2.604e-02, ..., -1.795e-05, -8.108e-06],
-           [-4.461e-04, -3.721e-02, ..., -1.573e-05, -1.652e-05],
-           ...,
-           [ 7.960e-02, -2.335e-01, ..., -6.815e-06,  1.266e-05],
-           [ 9.568e-02, -1.252e-01, ...,  7.397e-06, -1.921e-05]],
-          dtype=float32)
-    >>> y.shape
-    (117601,)
-
-    >>> frames.shape
-    (2048, 1806)
-
-    Or frame along the first axis instead of the last:
-
-    >>> frames = librosa.util.frame(y, frame_length=2048, hop_length=64, axis=0)
-    >>> frames.shape
-    (1806, 2048)
-
-    Frame a stereo signal:
-
-    >>> y, sr = librosa.load(librosa.ex('trumpet', hq=True), mono=False)
-    >>> y.shape
-    (2, 117601)
-    >>> frames = librosa.util.frame(y, frame_length=2048, hop_length=64)
-    (2, 2048, 1806)
-
-    Carve an STFT into fixed-length patches of 32 frames with 50% overlap
-
-    >>> y, sr = librosa.load(librosa.ex('trumpet'))
-    >>> S = np.abs(librosa.stft(y))
-    >>> S.shape
-    (1025, 230)
-    >>> S_patch = librosa.util.frame(S, frame_length=32, hop_length=16)
-    >>> S_patch.shape
-    (1025, 32, 13)
-    >>> # The first patch contains the first 32 frames of S
-    >>> np.allclose(S_patch[:, :, 0], S[:, :32])
-    True
-    >>> # The second patch contains frames 16 to 16+32=48, and so on
-    >>> np.allclose(S_patch[:, :, 1], S[:, 16:48])
-    True
-    """
-
-    # This implementation is derived from numpy.lib.stride_tricks.sliding_window_view (1.20.0)
-    # https://numpy.org/doc/stable/reference/generated/numpy.lib.stride_tricks.sliding_window_view.html
-
-    x = np.array(x, copy=False, subok=subok)
-
-    if x.shape[axis] < frame_length:
-        raise ParameterError(
-            "Input is too short (n={:d})"
-            " for frame_length={:d}".format(x.shape[axis], frame_length)
-        )
-
-    if hop_length < 1:
-        raise ParameterError("Invalid hop_length: {:d}".format(hop_length))
-
-    # put our new within-frame axis at the end for now
-    out_strides = x.strides + tuple([x.strides[axis]])
-
-    # Reduce the shape on the framing axis
-    x_shape_trimmed = list(x.shape)
-    x_shape_trimmed[axis] -= frame_length - 1
-
-    out_shape = tuple(x_shape_trimmed) + tuple([frame_length])
-    xw = as_strided(
-        x, strides=out_strides, shape=out_shape, subok=subok, writeable=writeable
-    )
-
-    if axis < 0:
-        target_axis = axis - 1
-    else:
-        target_axis = axis + 1
-
-    xw = np.moveaxis(xw, -1, target_axis)
-
-    # Downsample along the target axis
-    slices = [slice(None)] * xw.ndim
-    slices[axis] = slice(0, None, hop_length)
-    return xw[tuple(slices)]
-    
-def get_rms(*, y=None, S=None, frame_length=2048, hop_length=512, center=True, pad_mode="constant",):
-    """
-    This is a copy of librosa.features.rms() from v0.9.2
-    Copied here unaltered to solve a version incompatibility (error "libffi.so.7: cannot open shared object file: No such file or directory")
-    that would have broken the virtual environment.
-    
-    From https://librosa.org/doc/0.9.2/_modules/librosa/feature/spectral.html#rms:
-    
-    Compute root-mean-square (RMS) value for each frame, either from the
-    audio samples ``y`` or from a spectrogram ``S``.
-
-    Computing the RMS value from audio samples is faster as it doesn't require
-    a STFT calculation. However, using a spectrogram will give a more accurate
-    representation of energy over time because its frames can be windowed,
-    thus prefer using ``S`` if it's already available.
-
-    Parameters
-    ----------
-    y : np.ndarray [shape=(..., n)] or None
-        (optional) audio time series. Required if ``S`` is not input.
-        Multi-channel is supported.
-
-    S : np.ndarray [shape=(..., d, t)] or None
-        (optional) spectrogram magnitude. Required if ``y`` is not input.
-
-    frame_length : int > 0 [scalar]
-        length of analysis frame (in samples) for energy calculation
-
-    hop_length : int > 0 [scalar]
-        hop length for STFT. See `librosa.stft` for details.
-
-    center : bool
-        If `True` and operating on time-domain input (``y``), pad the signal
-        by ``frame_length//2`` on either side.
-
-        If operating on spectrogram input, this has no effect.
-
-    pad_mode : str
-        Padding mode for centered analysis.  See `numpy.pad` for valid
-        values.
-
-    Returns
-    -------
-    rms : np.ndarray [shape=(..., 1, t)]
-        RMS value for each frame
-
-    Examples
-    --------
-    >>> y, sr = librosa.load(librosa.ex('trumpet'))
-    >>> librosa.feature.rms(y=y)
-    array([[1.248e-01, 1.259e-01, ..., 1.845e-05, 1.796e-05]],
-          dtype=float32)
-
-    Or from spectrogram input
-
-    >>> S, phase = librosa.magphase(librosa.stft(y))
-    >>> rms = librosa.feature.rms(S=S)
-
-    >>> import matplotlib.pyplot as plt
-    >>> fig, ax = plt.subplots(nrows=2, sharex=True)
-    >>> times = librosa.times_like(rms)
-    >>> ax[0].semilogy(times, rms[0], label='RMS Energy')
-    >>> ax[0].set(xticks=[])
-    >>> ax[0].legend()
-    >>> ax[0].label_outer()
-    >>> librosa.display.specshow(librosa.amplitude_to_db(S, ref=np.max),
-    ...                          y_axis='log', x_axis='time', ax=ax[1])
-    >>> ax[1].set(title='log Power spectrogram')
-
-    Use a STFT window of constant ones and no frame centering to get consistent
-    results with the RMS computed from the audio samples ``y``
-
-    >>> S = librosa.magphase(librosa.stft(y, window=np.ones, center=False))[0]
-    >>> librosa.feature.rms(S=S)
-    >>> plt.show()
-
-    """
-    if y is not None:
-        if center:
-            padding = [(0, 0) for _ in range(y.ndim)]
-            padding[-1] = (int(frame_length // 2), int(frame_length // 2))
-            y = np.pad(y, padding, mode=pad_mode)
-
-        x = librosa_utils_frame(y, frame_length=frame_length, hop_length=hop_length)
-
-        # Calculate power
-        power = np.mean(np.abs(x) ** 2, axis=-2, keepdims=True)
-    elif S is not None:
-        # Check the frame length
-        if S.shape[-2] != frame_length // 2 + 1:
-            raise ParameterError(
-                "Since S.shape[-2] is {}, "
-                "frame_length is expected to be {} or {}; "
-                "found {}".format(
-                    S.shape[-2], S.shape[-2] * 2 - 2, S.shape[-2] * 2 - 1, frame_length
-                )
-            )
-
-        # power spectrogram
-        x = np.abs(S) ** 2
-
-        # Adjust the DC and sr/2 component
-        x[..., 0, :] *= 0.5
-        if frame_length % 2 == 0:
-            x[..., -1, :] *= 0.5
-
-        # Calculate power
-        power = 2 * np.sum(x, axis=-2, keepdims=True) / frame_length ** 2
-    else:
-        raise ParameterError("Either `y` or `S` must be input.")
-
-    return np.sqrt(power)
-    
-    
-def get_snr(clip_path, noise_path, algorithm = 1):
-    """
-    Use noise clips generated by get_silence() to calculate signal to noise
-
-    Arguments:
-        clip_path (str): the wav clip you want to calculate snr on
-        noise_path (str): the background clip for the recording that the vocalization came from (generated by annotation.get_noise_clip())
-        algorithm (int): Must be one of 1, 2, or 3 (see comment below for description of each)
-    Returns:
-        snr (floar): the signal to noise ratio
-    """
-    #use noise clips generated by annotation.get_noise_clip() to calculate signal to noise ratio
-    #based on snr calculations from warlbeR (https://github.com/maRce10/warbleR)
-    # 1: ratio of S mean amplitude envelope to N mean amplitude envelope (mean(env(S))/mean(env(N)))
-    # 2: ratio of S amplitude envelope RMS (root mean square) to N amplitude envelope RMS (rms(env(S))/rms(env(N)))
-    # 3: ratio of the difference between S amplitude envelope RMS and N amplitude envelope RMS to N amplitude envelope RMS ((rms(env(S)) - rms(env(N)))/rms(env(N)))
-    fs, noise = wavfile.read(noise_path)
-    _, signal = wavfile.read(clip_path)
-
-    if algorithm == 1:	
-        signal_amplitude_envelope = np.abs(hilbert(signal))
-        noise_amplitdue_envelope = np.abs(hilbert(noise))
-        snr = np.mean(signal_amplitude_envelope)/np.mean(noise_amplitdue_envelope)
-
-    elif algorithm == 2:
-
-        signal_rms = get_rms(y=np.array(signal, 'float'))
-        noise_rms = get_rms(y=np.array(noise, 'float'))
-        snr = np.mean(signal_rms)/np.mean(noise_rms)
-
-    elif algorithm == 3:
-        signal_amplitude_envelope = np.abs(hilbert(signal))
-        noise_amplitdue_envelope = np.abs(hilbert(noise))
-        snr = (rms(y=signal_amplitude_envelope) - rms(y=noise_amplitdue_envelope))/rms(y=noise_amplitdue_envelope)
-
-    return snr
-
-#same as above but iterate through a directory - right now only deal with algorithms 1 and 2
-def get_snr_batch(clips_dir, noise_dir, species, algorithm):
-
-    """
-    Run get_snr() on a batch of vocalization clips in a directory
-
-    Arguments:
-        clips_path (str): the path to the directory containing the wav clips for which you want to get signal to noise
-        noise_path (str): the path to the directory containing the background clip for each wav in clip_dir (one noise clip per recording)
-        algorithm (int): Must be one of 1, 2, or 3 (see comment below for description of each)
-    Returns:
-        snr_df (dataframe): a dataframe where each row is a vocalization and columns are path to vocalization file, snr, and algorithm
-    """
-
-    #get paths to vocalizations
-    if species != None:
-        vocs = [i for i in os.listdir(clips_dir) if i.startswith(species)]
-    else:
-        vocs = [i for i in os.listdir(clips_dir) if not i.startswith('.')]
-
-    sig2noise_list = []
-    source_files = []
-
-    #iterate through vocalizations
-    for voc in tqdm(vocs):
-        
-        #get the audio
-        clip_path = os.path.join(clips_dir,voc)
-        noise_path = os.path.join(noise_dir,voc.split('_clip')[0]+'_noiseclip.wav')
-
-        #get signal to noise
-        snr = get_snr(clip_path=clip_path, noise_path=noise_path, algorithm=algorithm)
-
-        #update
-        sig2noise_list.append(snr)
-        source_files.append(voc)
-
-    #write data to dataframe
-    snr_df = pd.DataFrame()
-    snr_df['source_file'] = source_files
-    snr_df['snr'] = sig2noise_list
-    snr_df['algorithm'] = algorithm
-
-    return snr_df
-	
-	
-#calculate how much of the audio clip is clipped
-#test for clipping
-#See https://dsp.stackexchange.com/questions/61996/what-are-the-semantics-of-wav-file-sample-values#:~:text=The%2016%20bit%20values%20in,but%20this%20is%20an%20interpretation.
-#for where the threshold comes from (our audio is 16-bit and values range from -32768 to 32767)
-#threshold is a percent of the maximum possible value the microphone can handle in decimals (ie, .95)
 def get_clipping(clip_path, threshold):
     
     """
@@ -795,7 +428,7 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir, path_to_
         'SAVEDIR='+ paths_dict[species]['save_path'] +'\n',
         '\n',
         '#run warbleR extract\n',
-        'Rscript /n/hoekstra_lab_tier1/Users/njourjine/manuscript/notebooks/00_manuscript/warbleR_extract.R'+" $SPECIES"+" $WAVSDIR"+" $SAVEDIR"
+        'Rscript /n/hoekstra_lab_tier1/Users/njourjine/public_repositories/peromyscus-pup-vocal-evolution/scripts/warbleR_feature_extraction.R'+" $SPECIES"+" $WAVSDIR"+" $SAVEDIR"
         ]
 
         #write lines
@@ -818,6 +451,7 @@ def write_warbleR_job_scripts(dataset, save_root, wav_root, script_dir, path_to_
             f.writelines(parent_lines)
             
     print('wrote job scripts to:\n\t', script_dir)
+
 
         
 
