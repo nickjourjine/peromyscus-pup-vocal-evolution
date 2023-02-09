@@ -5,10 +5,6 @@ import os
 import glob
 from tqdm import tqdm
 
-#plotting
-import seaborn as sns 
-import matplotlib.pyplot as plt
-
 #data
 import json
 import numpy as np
@@ -20,7 +16,6 @@ from scipy.ndimage.filters import gaussian_filter
 
 #custom
 from src.spectrogramming import ava_get_spec
-from src.parameters import save_parameters, load_parameters
 
 #definitely keep - documented now on evernote 20230105
 def get_amplitude_segments(audio_dir, save_dir, seg_params, species = None, thresholds_path=None, intersyll_threshold = None, duration_threshold = None, path_list = None):
