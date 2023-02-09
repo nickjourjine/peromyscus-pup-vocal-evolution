@@ -16,7 +16,9 @@
             "BW_18315x18495_pup2_p09_3800_m_4_2018-10-03_09-42-05.wav",
             "BW_18315x18495_pup3_p09_4100_f_4_2018-10-03_09-50-18.wav",
             "BW_18387x18857_pup1_p09_4300_m_2_2018-10-05_09-25-47.wav",
-            "BW_21607x21658_pup1_p09_5100_f_2_2018-12-20_09-34-24.wav"
+            "BW_21607x21658_pup1_p09_5100_f_2_2018-12-20_09-34-24.wav",
+            "CF-PO_18434x18444-cf20933-cf20930_pup1_p09_4300_m_2_2018-12-07_09-49-45.wav",
+            "CF-PO_18434x18444-cf20933-cf20930_pup2_p09_3900_m_2_2018-12-07_09-59-10.wav"
         ],
         "bw_po_f1": [],
         "bw_po_f2": [
@@ -26,6 +28,69 @@
                 "ch8_BWxPO-cross-F2_27404x27407_fam-A7_ltr1_pup7_ch8_4200_m_328_275_fr1_p7_2021-01-05_13-47-10.wav"
             ]
         ]
+    },
+    "figure_1_panel_d": {
+        "features": [
+            "duration",
+            "time.median",
+            "time.Q25",
+            "time.Q75",
+            "time.IQR",
+            "meanfreq",
+            "freq.median",
+            "freq.Q25",
+            "freq.Q75",
+            "freq.IQR",
+            "meanpeakf",
+            "dfslope",
+            "enddom",
+            "startdom",
+            "modindx",
+            "dfrange",
+            "sfm",
+            "entropy",
+            "sp.ent",
+            "time.ent",
+            "sd",
+            "meandom",
+            "mindom",
+            "maxdom",
+            "skew",
+            "kurt"
+        ],
+        "species_color_dict": {
+            "BW": "steelblue",
+            "NB": "dodgerblue",
+            "BK": "darkblue",
+            "SW": "blue",
+            "PO": "orange",
+            "LO": "gold",
+            "GO": "green",
+            "LL": "forestgreen",
+            "MU": "mediumspringgreen",
+            "MZ": "turquoise"
+        },
+        "genus_color_dict": {
+            "BW": "black",
+            "NB": "black",
+            "BK": "black",
+            "SW": "black",
+            "PO": "black",
+            "LO": "black",
+            "GO": "black",
+            "LL": "black",
+            "MU": "mediumspringgreen",
+            "MZ": "turquoise"
+        },
+        "voc_name_color_dict": {
+            "cry": "deeppink",
+            "whistle": "thistle"
+        },
+        "HDBSCAN_color_dict": {
+            "0": "thistle",
+            "1": "deeppink",
+            "-1": "thistle"
+        }
     },
     "figure_1_panel_f": {
         "sampling_seed": 123456,
@@ -93,7 +158,6 @@
         "num_to_sample": 500
     },
     "figure_4": {
-        "min_voc_number": 5,
         "cry_features": [
             "cry_duration_med",
             "cry_time.median_med",
@@ -158,7 +222,6 @@
         ]
     },
     "figure_5": {
-        "min_voc_number": 5,
         "cry_features": [
             "cry_duration_med",
             "cry_time.median_med",
