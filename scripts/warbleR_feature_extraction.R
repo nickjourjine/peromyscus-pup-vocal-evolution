@@ -34,12 +34,21 @@ warbleR_options(wav.path = wavs.dir, wl = 1024, flim = c(5, 125), ovlp = 25, bp 
 print("making selection table.")
 est <- selection_table(whole.recs = T, extended = F, confirm.extended = F, pb = F)
 
-#get acoustic features and mfccs
-print("calculating acoustic features.")
-sp <- specan(est,harmonicity = FALSE, fast = TRUE, pb = F)
+#get acoustic features
+#print("calculating acoustic features.")
+#sp <- specan(est,harmonicity = FALSE, fast = TRUE, pb = F)
+
+#get sound pressure level
+print("getting sound pressure levels.")
+pressure <- sound_pressure_level(est, pb = F)
+
+#merge
+print("merging data.")
+#data <- merge(sp, pressure)
+data <- pressure
 
 print("making dataframe.")
-prms <- data.frame(est[, c("sound.files")], sp)
+prms <- data.frame(est[, c("sound.files")], data)
 colnames(prms)[colnames(prms) == 'sound.files'] <- 'source_file'
 prms <- subset(prms, select=-c(sound.files.1, selec))
 
