@@ -1,8 +1,14 @@
 #this file contains functions for training and evaluating machine learning models on acoustic features
 #of individual vocalizations
 
+#file system
+import os
+
+#data
+import pickle
 import numpy as np
 import pandas as pd
+
 
 #machine learning
 from sklearn.svm import SVC
@@ -12,11 +18,15 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
-def save(models_root, training_df, feature_set, target, test_size, n_estimators):
+#custom code
+from src import parameters, annotation
+
+def save(model, models_root, training_df, feature_set, target, test_size, n_estimators, criterion, split_random_state, training_random_state, bootstrap, oob_score, model_type = 'random_forest'):
     """
     Save a random forest model and its training parameters
     
     Arguments:
+        model (RandomForest object): the model to save
         models_root (str): path to the directroy containing the models, with sub-directories corresponding to targets (species or voc type)
         training_df (dataframe): the dataframe the training was done on
         feature_set (list): the training features
@@ -24,7 +34,13 @@ def save(models_root, training_df, feature_set, target, test_size, n_estimators)
         test_size (float): fraction of rows in training_df reserved for testing
         n_estimators (int): number of trees
         criterion (str): 'entropy'
-        random_state (int): seed for reproducible sampling from all annotated vocalizations
+        split_random_state (int): seed for reproducible train/test split
+        training_random_state (int): seed for reproducible training
+        model_type (str): 'random_forest'
+        
+    Returns:
+        None
+        
     """
     
     model_params = {'model_type':'random_forest',
@@ -32,55 +48,85 @@ def save(models_root, training_df, feature_set, target, test_size, n_estimators)
                     'target': target,
                     'test_size':test_size,
                     'number_training_cries':len(training_df.loc[training_df['human_label']=='cry']),
-                    'number_training_whistles':len(training_df.loc[training_df['human_label']=='whistle']),
+                    'number_training_USV':len(training_df.loc[training_df['human_label']=='USV']),
                     'number_training_nonvocal':len(training_df.loc[training_df['human_label']=='scratch']),
                     'n_estimators':n_estimators,
                     'criterion':criterion,
-                    'random_state':random_state}         
+                    'training_random_state':training_random_state, 
+                    'split_random_state':split_random_state,
+                    'bootstrap': bootstrap, 
+                    'oob_score':oob_score}         
     
     if model_params['target'] == 'voc_type':
         target_dir = 'voc_type_classifiers'
         iteration = parameters.get_date_time()
         params_save_name = ('_').join([model_type,iteration,'params'])
         params_save_dir = os.path.join(models_root,target_dir,iteration)+'/'
+        
+        print('model and training parameters will be saved to...', params_save_dir)
+        response = input('continue? y/n')
 
-        if iteration not in os.listdir(os.path.join(models_root,target_dir)):
-            os.mkdir(params_save_dir)
-            print('made a directory:\n\t', params_save_dir)
+        if response == 'n':
+            print('ok - doing nothing')
+            return
+        
+        elif response == 'y':
+            if iteration not in os.listdir(os.path.join(models_root,target_dir)):
+                os.mkdir(params_save_dir)
+                print('made a directory:\n\t', params_save_dir)
 
-        #save the parameters
-        parameters.save_parameters(params = model_params,
-                                   save_dir=params_save_dir, 
-                                   save_name=params_save_name)
+            #save the parameters
+            parameters.save(params = model_params,
+                            save_dir=params_save_dir, 
+                            save_name=params_save_name)
 
-        #save the model
-        model_save_name = ('_').join([model_type,iteration,'voc_type_model'])                               
-        pickle.dump(RF_model, open(os.path.join(params_save_dir,model_save_name)+'.pkl', 'wb'))
-        assert os.path.exists(os.path.join(params_save_dir,model_save_name)+'.pkl')
-        print('saved model to:\n\t', os.path.join(params_save_dir,model_save_name)+'.pkl')
-        print('done.')
+            #save the model
+            model_save_name = ('_').join([model_type,iteration,'voc_type_model'])   
+            pickle.dump(model, open(os.path.join(params_save_dir,model_save_name)+'.pkl', 'wb'))
+            
+            #make sure you actually saved
+            assert os.path.exists(os.path.join(params_save_dir,model_save_name)+'.pkl')
+
+            print('saved model to:\n\t', os.path.join(params_save_dir,model_save_name)+'.pkl')
+            print('done.')
 
     elif model_params['target'] == 'species':
         target_dir = 'species_classifiers'
-        iteration = get_date_time()
+        iteration = parameters.get_date_time()
         params_save_name = ('_').join([model_type,iteration,'params'])
         params_save_dir = os.path.join(models_root,target_dir,iteration)+'/'
+        
+        print('model and training parameters will be saved to...', params_save_dir)
+        response = input('continue? y/n')
 
-        if iteration not in os.listdir(os.path.join(models_root,target_dir)):
-            os.mkdir(params_save_dir)
-            print('made a directory:\n\t', params_save_dir)
+        if response == 'n':
+            print('ok - doing nothing')
+            return
+        elif response == 'y':
+            if iteration not in os.listdir(os.path.join(models_root,target_dir)):
+                os.mkdir(params_save_dir)
+                print('made a directory:\n\t', params_save_dir)
 
-        #save the parameters
-        save_parameters(params = model_params,
-                        save_dir=params_save_dir, 
-                        save_name=params_save_name)
+            #save the parameters
+            parameters.save(params = model_params,
+                            save_dir=params_save_dir, 
+                            save_name=params_save_name)
 
-        #save the model
-        model_save_name = ('_').join([model_type,iteration,'model'])                               
-        pickle.dump(RF_model, open(os.path.join(params_save_dir,model_save_name)+'.pkl', 'wb'))
-        assert os.path.exists(os.path.join(params_save_dir,model_save_name)+'.pkl')
-        print('saved model to:\n\t', os.path.join(params_save_dir,model_save_name)+'.pkl')
-        print('done.')
+            #save the model
+            
+            
+            if len(training_df.loc[training_df['human_label']=='cry']) == 0:
+                model_save_name = ('_').join([model_type,iteration,'model_USV'])   
+            elif len(training_df.loc[training_df['human_label']=='USV']) == 0:
+                model_save_name = ('_').join([model_type,iteration,'model_cry'])  
+
+            pickle.dump(model, open(os.path.join(params_save_dir,model_save_name)+'.pkl', 'wb'))
+            
+            #make sure you actually saved
+            assert os.path.exists(os.path.join(params_save_dir,model_save_name)+'.pkl')
+
+            print('saved model to:\n\t', os.path.join(params_save_dir,model_save_name)+'.pkl')
+            print('done.')
     
     
 def get_metric_by_sample_size(voc_type, 
@@ -89,8 +135,8 @@ def get_metric_by_sample_size(voc_type,
                               features, 
                               random_state, 
                               test_size, 
-                              target ='species', 
-                              n_estimators = 500 
+                              n_estimators,
+                              target ='species'
                               ):
     """
     Train random forest models to predict species from acoustic features of a particular vocalization type
@@ -112,7 +158,7 @@ def get_metric_by_sample_size(voc_type,
     """
       
     #check inputs
-    assert voc_type in ['cry', 'USV', 'whistle'], "voc_type must be 'cry' or 'USV' or 'whistle'"
+    assert voc_type in ['cry', 'USV'], "voc_type must be 'cry' or 'USV'"
     assert 'human_label' in voc_df.columns, "'human_label' must be a column name in voc_df"
     assert 'species' in voc_df.columns, "'species' must be a column name in voc_df"
     assert set(voc_df['species'].unique()) == set(['BW', 'BK', 'NB', 'SW', 'PO', 'LO', 'GO', 'LL']), "species must be ['BW', 'BK', 'NB', 'SW', 'PO', 'LO', 'GO', 'LL']"
@@ -133,6 +179,7 @@ def get_metric_by_sample_size(voc_type,
         print('\tsampling data...')
         downsampled_list = []
         species_list = ['BW', 'BK', 'NB', 'SW', 'PO', 'LO', 'GO', 'LL']
+        
         for species in species_list:
 
             #get the vocs for this species
@@ -147,6 +194,8 @@ def get_metric_by_sample_size(voc_type,
         #assemble all the species
         ds_df = pd.concat(downsampled_list)
         ds_df = ds_df.reset_index(drop=True)
+        for i in ds_df['species'].unique():
+            print(len(ds_df.loc[ds_df['species']==i]))
         
         #select the features
         ds_df = ds_df[features+[target]]
