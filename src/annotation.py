@@ -6,8 +6,8 @@ import glob
 from tqdm import tqdm
 
 #plotting
-import seaborn as sns 
-import matplotlib.pyplot as plt
+#import seaborn as sns 
+#import matplotlib.pyplot as plt
 
 #data
 import umap
