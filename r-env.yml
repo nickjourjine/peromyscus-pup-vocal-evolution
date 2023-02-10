@@ -9,4 +9,10 @@ dependencies:
   - r-lme4
   - r-irkernel
   - jupyter
+  - r-emmeans
+  - r-lmertest
+  - jupyter_contrib_nbextensions
+  - r-pbkrtest
+  - r-estimatr
+  - r-robust
 prefix: /n/home10/jourjine/.conda/envs/r_env
