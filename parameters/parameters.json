@@ -127,7 +127,7 @@
     },
     "figure_2_panels_AB": {
         "sampling_seed": 123456,
-        "num_to_sample": 2000,
+        "num_to_sample": 800,
         "features": [
             "duration",
             "dfslope",
@@ -154,8 +154,7 @@
         "training_oob_score": true
     },
     "figure_2_panels_CD": {
-        "sampling_seed": 123456,
-        "num_to_sample": 500
+        "sampling_seed": 123456
     },
     "figure_4": {
         "cry_features": [
@@ -326,6 +325,26 @@
         }
     },
     "supp_figure_2": {
+        "sampling_seed": 333333,
+        "num_to_sample": 500,
+        "features": [
+            "duration",
+            "dfslope",
+            "time.median",
+            "time.IQR",
+            "time.Q25",
+            "time.Q75",
+            "meanfreq",
+            "meandom",
+            "freq.IQR",
+            "freq.Q25",
+            "freq.Q75",
+            "freq.median",
+            "sp.ent",
+            "time.ent"
+        ]
+    },
+    "supp_figure_3": {
         "sampling_seed": 123456,
         "num_to_sample": 2000,
         "features": [
@@ -364,25 +383,5 @@
         "training_n_estimators": 10000,
         "training_bootstrap": true,
         "training_oob_score": true
-    },
-    "supp_figure_3": {
-        "sampling_seed": 123456,
-        "num_to_sample": 500,
-        "features": [
-            "duration",
-            "dfslope",
-            "time.median",
-            "time.IQR",
-            "time.Q25",
-            "time.Q75",
-            "meanfreq",
-            "meandom",
-            "freq.IQR",
-            "freq.Q25",
-            "freq.Q75",
-            "freq.median",
-            "sp.ent",
-            "time.ent"
-        ]
     }
 }
