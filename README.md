@@ -1,8 +1,10 @@
+# Evolution of pup isolation calls in **Peromyscus** and **Mus**
+
 This repository contains code for reproducing results and figures from
 
 Jourjine, N., Woolfolk, M.L., Sanguinetti-Scheck, J.I., Sabatini, J.E., McFadden, S., Lindholm, A.K., Hoekstra, H.E., 2022. Two pup vocalization types are genetically and functionally separable in deer mice (preprint). BioRxiv. https://doi.org/10.1101/2022.11.11.516230
 
-# How to use
+## How to use
 
 Code to reproduce analyses for all figures is in the `scripts` directory. This directory contains six jupyter notebooks and one R script, each of which is written to carry out a specific set of analyses described below. The notebooks use a set of helper functions located in the .py files in the `src` directory. You can install this code by navigating to your local copy of the repository and running `pip install -e .`
 
