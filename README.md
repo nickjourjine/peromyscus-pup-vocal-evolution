@@ -6,11 +6,7 @@ Jourjine, N., Woolfolk, M.L., Sanguinetti-Scheck, J.I., Sabatini, J.E., McFadden
 
 Code to reproduce analyses for all figures is in the `scripts` directory. This directory contains six jupyter notebooks and one R script, each of which is written to carry out a specific set of analyses described below. The notebooks use a set of helper functions located in the .py files in the `src` directory. You can install this code by navigating to your local copy of the repository and running `pip install -e .`
 
-## conda environments
-
-The conda environments used to produce the results in the paper are located in the files `article-env.yml`, which contains all of the python packages we used, and `r-env.yml`, which contains all of the R packages used for statistical analyses. You can reproduce these environments by running `conda env create -f article-env.yml` and `conda env create -f r-env.yml`, respectively. 
-
-## jupyter notebooks
+## Jupyter Notebooks
 
 ### Segmenting and UMAP.ipynb
 
@@ -40,3 +36,6 @@ This notebook produces the analyses in Figure 3.
 
 This notebook produces the anlayses for all other main and supplemental Figures.
 
+## Anaconda Environments
+
+The conda environments used to produce the results in the paper are located in `r-env.yml`, which contains all of the R packages used for statistical analyses, and `article-env.yml`, which contains python packages used to carry out all other analyses. You can reproduce these environments by running `conda env create -f r-env.yml` and `conda env create -f article-env.yml`, respectively. 
