@@ -1,4 +1,4 @@
-# Evolution of pup isolation calls in **Peromyscus** and **Mus**
+# Evolution of pup isolation calls in *Peromyscus* and *Mus*
 
 This repository contains code for reproducing results and figures from
 
