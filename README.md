@@ -44,15 +44,16 @@ The conda environments used to produce the results in the paper are located in `
 
 ## Two letter species codes
 
-We use two-letter codes as shorthand to refer to the different species we analyze. They are:
-
-BW = *P. maniculatus bairdii*
-BK = *P. maniculatus gambelli*
-SW = *P. maniculatus rubidus*
-NB = *P. maniculatus nubiterrae*
-PO = *P. maniculatus subgriseus*
-LO = *P. maniculatus leucocephalus*
-GO = *P. gossypinus*
-LL = *P. leucopus*
-MU = *Mus musculus domesticus* (C57Bl6/j)
-MZ = *Mus musculus domesticus* (wild) 
+We use two-letter codes as shorthand to refer to the different taxa we analyze. They are:
+|code|taxon                                |
+|--- |-------------------------------------|
+|BW  | *P. maniculatus bairdii*            |
+|BK  | *P. maniculatus gambelli*           |
+|SW  | *P. maniculatus rubidus*            |
+|NB  | *P. maniculatus nubiterrae*         |
+|PO  | *P. maniculatus subgriseus*         | 
+|LO  | *P. maniculatus leucocephalus*      |
+|GO  | *P. gossypinus*                     |
+|LL  | *P. leucopus*                       |
+|MU  | *Mus musculus domesticus* (C57Bl6/j)|
+|MZ | *Mus musculus domesticus* (wild)    |
