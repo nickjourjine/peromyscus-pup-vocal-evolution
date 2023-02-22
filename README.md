@@ -44,7 +44,7 @@ The conda environments used to produce the results in the paper are located in `
 
 ## Two letter species codes
 
-We use two letter codes as shorthand to refer to the different species we analyze. They are:
+We use two-letter codes as shorthand to refer to the different species we analyze. They are:
 
 BW = *P. maniculatus bairdii*
 BK = *P. maniculatus gambelli*
