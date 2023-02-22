@@ -40,4 +40,19 @@ This notebook produces the anlayses for all other main and supplemental Figures.
 
 ## Anaconda Environments
 
-The conda environments used to produce the results in the paper are located in `r-env.yml`, which contains all of the R packages used for statistical analyses, and `article-env.yml`, which contains python packages used to carry out all other analyses. You can reproduce these environments by running `conda env create -f r-env.yml` and `conda env create -f article-env.yml`, respectively. 
+The conda environments used to produce the results in the paper are located in `r-env.yml`, which contains all of the R packages used for statistical analyses, and `article-env.yml`, which contains python packages used to carry out all other analyses. You can reproduce these environments by running `conda env create -f r-env.yml` and `conda env create -f article-env.yml`, respectively.
+
+## Two letter species codes
+
+We use two letter codes as shorthand to refer to the different species we analyze. They are:
+
+BW = *P. maniculatus bairdii*
+BK = *P. maniculatus gambelli*
+SW = *P. maniculatus rubidus*
+NB = *P. maniculatus nubiterrae*
+PO = *P. maniculatus subgriseus*
+LO = *P. maniculatus leucocephalus*
+GO = *P. gossypinus*
+LL = *P. leucopus*
+MU = *Mus musculus domesticus* (C57Bl6/j)
+MZ = *Mus musculus domesticus* (wild) 
