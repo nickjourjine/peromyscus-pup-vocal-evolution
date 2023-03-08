@@ -1,12 +1,15 @@
-# Evolution of pup isolation calls in *Peromyscus* and *Mus*
+# *Peromyscus* pup vocal evolution
 
 This repository contains code for reproducing results and figures from
 
-Jourjine, N., Woolfolk, M.L., Sanguinetti-Scheck, J.I., Sabatini, J.E., McFadden, S., Lindholm, A.K., Hoekstra, H.E., 2022. Two pup vocalization types are genetically and functionally separable in deer mice (preprint). BioRxiv. https://doi.org/10.1101/2022.11.11.516230
+Nicholas Jourjine, Maya L. Woolfolk, Juan I. Sanguinetti-Scheck, John E. Sabatini, Sade McFadden, Anna K. Lindholm, Hopi E. Hoekstra,
+Two pup vocalization types are genetically and functionally separable in deer mice, Current Biology, 2023, Current Biology, 2023 https://doi.org/10.1016/j.cub.2023.02.045
 
 ## How to use
 
 Code to reproduce analyses for all figures is in the `scripts` directory. This directory contains six jupyter notebooks and one R script, each of which is written to carry out a specific set of analyses described below. The notebooks use a set of helper functions located in the .py files in the `src` directory. You can install this code by navigating to your local copy of the repository and running `pip install -e .`
+
+The raw data analyzed by this code is located in a Dryad database at `https://doi.org/10.5061/dryad.g79cnp5ts` Please see the README file associated with that dataset for more information about the raw data.
 
 ## Jupyter Notebooks
 
@@ -21,7 +24,7 @@ This notebook produces the annotations analyzed in Figure 2.
 ### warbleR_feature_extraction.R
 
 This script uses the R package warbleR to calculate acoustic features of vocalization segments produced by the Segmenting and UMAP.ipynb notebook. It takes three inputs: species (the species to calculate features from); wavs.dir (the directory containing the segmented vocalizations from that species with one .wav file per vocalization); and analysis.dir (the directory where a csv with acoustic features calculated for each of those wav files will be saved). It is written to be called from the command line along with these inputs, e.g. `R path/to/warbleR_feature_extraction.R species wavs.dir analysis.dir`
-
+:q
 ### Prepare warbleR Job Scripts.ipynb
 
 We calculated acoustic features for vocalizations using a computing cluster. This notebook produces the job scripts required to do this. If you have access to a computing cluster, this is the easiest way to calculate features for all the vocalizations of all the species.
@@ -56,4 +59,4 @@ We use two-letter codes as shorthand to refer to the different taxa we analyze. 
 |GO  | *P. gossypinus*                     |
 |LL  | *P. leucopus*                       |
 |MU  | *Mus musculus domesticus* (C57Bl6/j)|
-|MZ | *Mus musculus domesticus* (wild)    |
+|MZ  | *Mus musculus domesticus* (wild)    |
