@@ -3,7 +3,7 @@
 This repository contains code for reproducing results and figures from
 
 Nicholas Jourjine, Maya L. Woolfolk, Juan I. Sanguinetti-Scheck, John E. Sabatini, Sade McFadden, Anna K. Lindholm, Hopi E. Hoekstra,
-Two pup vocalization types are genetically and functionally separable in deer mice, Current Biology, 2023, Current Biology, 2023 https://doi.org/10.1016/j.cub.2023.02.045
+Two pup vocalization types are genetically and functionally separable in deer mice, Current Biology, 2023 https://doi.org/10.1016/j.cub.2023.02.045
 
 ## How to use
 
@@ -24,7 +24,7 @@ This notebook produces the annotations analyzed in Figure 2.
 ### warbleR_feature_extraction.R
 
 This script uses the R package warbleR to calculate acoustic features of vocalization segments produced by the Segmenting and UMAP.ipynb notebook. It takes three inputs: species (the species to calculate features from); wavs.dir (the directory containing the segmented vocalizations from that species with one .wav file per vocalization); and analysis.dir (the directory where a csv with acoustic features calculated for each of those wav files will be saved). It is written to be called from the command line along with these inputs, e.g. `R path/to/warbleR_feature_extraction.R species wavs.dir analysis.dir`
-:q
+
 ### Prepare warbleR Job Scripts.ipynb
 
 We calculated acoustic features for vocalizations using a computing cluster. This notebook produces the job scripts required to do this. If you have access to a computing cluster, this is the easiest way to calculate features for all the vocalizations of all the species.
@@ -54,8 +54,8 @@ We use two-letter codes as shorthand to refer to the different taxa we analyze. 
 |BK  | *P. maniculatus gambelli*           |
 |SW  | *P. maniculatus rubidus*            |
 |NB  | *P. maniculatus nubiterrae*         |
-|PO  | *P. maniculatus subgriseus*         | 
-|LO  | *P. maniculatus leucocephalus*      |
+|PO  | *P. polionotus subgriseus*          | 
+|LO  | *P. polionotus leucocephalus*       |
 |GO  | *P. gossypinus*                     |
 |LL  | *P. leucopus*                       |
 |MU  | *Mus musculus domesticus* (C57Bl6/j)|
