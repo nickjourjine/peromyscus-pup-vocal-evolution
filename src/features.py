@@ -162,22 +162,22 @@ def aggregate_pup(source_path, features, features_df, drop_clipped):
             assert sum(feats_no_clipping['percent_clipped']) == 0
 
             if not feature in ['duration']: #don't get spectral features from clipped vocs
-                variances = feats_no_clipping[[feature, 'predicted_label']].groupby(by=['predicted_label']).mean()
-                means = feats_no_clipping[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.var)
+                means = feats_no_clipping[[feature, 'predicted_label']].groupby(by=['predicted_label']).mean()
+                variances = feats_no_clipping[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.var)
                 mins = feats_no_clipping[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.min)  
                 maxs = feats_no_clipping[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.max)
                 meds = feats_no_clipping[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.median) 
 
             else: #still get duration from clipped vocalizations
-                variances = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).mean()
-                means = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.var)
+                means = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).mean()
+                variances = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.var)
                 mins = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.min)  
                 maxs = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.max)
                 meds = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.median) 
         
         else:
-            variances = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).mean()
-            means = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.var)
+            means = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).mean()
+            variances = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.var)
             mins = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.min)  
             maxs = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.max)
             meds = feats[[feature, 'predicted_label']].groupby(by=['predicted_label']).aggregate(np.median) 
