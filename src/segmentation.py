@@ -489,7 +489,6 @@ def prune_segments(predictions_df, intersyll_threshold,duration_threshold,annota
 		new_segments['duration'] = new_segments['stop_seconds'] - new_segments['start_seconds']
 		new_segments = new_segments.loc[new_segments['duration'] > duration_threshold]
 		
-		#TODO: get this to work
 		#if annotation==True:
 		#	new_segments['name'] = list(pruned_intersyllable['name'].loc[pruned_intersyllable['start_or_stop'] == 'start'])
 		
@@ -502,10 +501,6 @@ def prune_segments(predictions_df, intersyll_threshold,duration_threshold,annota
 	all_new_segments = all_new_segments.loc[all_new_segments['duration'] > duration_threshold]
 
 	return all_new_segments
-
-    
-    
-#probably delete
 
 def evaluate_predictions(prediction_csv, annotations_csv, annotations_dir, tolerance, verbose=False):
     """
