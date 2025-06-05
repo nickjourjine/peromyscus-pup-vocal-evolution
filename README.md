@@ -5,6 +5,12 @@ This repository contains code for reproducing results and figures from
 Nicholas Jourjine, Maya L. Woolfolk, Juan I. Sanguinetti-Scheck, John E. Sabatini, Sade McFadden, Anna K. Lindholm, Hopi E. Hoekstra,
 Two pup vocalization types are genetically and functionally separable in deer mice, Current Biology, 2023 https://doi.org/10.1016/j.cub.2023.02.045
 
+## Scientific overview
+
+![graphical_abstract](graphical_abstract.png)
+
+The goal of this study was to better understand the genetic basis of vocal repertoire evolution. To do this, we focused on a group of North American rodents, the [deer mice](https://elifesciences.org/articles/06813), who have recently evolved large differences in their morphologies and behaviors. Focusing on a specific behavioral context in which these mice (and other mammals) vocalize - neonatal isolation - we characterized the evolution and ontogeny of isolation-induced calls, identifying two acoustically distinct call types: high-frequency ultrasonic vocalizations (USVs) similar to those made by isolated neonatal [house mice](https://pmc.ncbi.nlm.nih.gov/articles/PMC9744514/), and low frequency cries not found in the isolation induced calls of house mice, either in the labotory or in wild, free-living populations. We show in deer mice that cries and USVs are functionally distinct, as cries but not USVs trigger rapid maternal approach to a speaker, and also genetically distinct, as their features can be uncoupled in second generation hybrids between different deer mouse species. These findings provide insight into the genetic evolution of vocalization "types" within a species' vocal repertoire, and suggest that lack of genetic contraint between cries and USVs has facilitated their functional specialization in deer mice.
+
 ## How to use
 
 Code to reproduce analyses for all figures is in the `scripts` directory. This directory contains six jupyter notebooks and one R script, each of which is written to carry out a specific set of analyses described below. The notebooks use a set of helper functions located in the .py files in the `src` directory. You can install this code by navigating to your local copy of the repository and running `pip install -e .`
